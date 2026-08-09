@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKI Desktop Shell</title>
+    <!-- Main Architectural Stylesheet -->
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="aki-app-container">
+        
+        <!-- Topbar -->
+        <header class="aki-layout-topbar">
+            <div class="aki-topbar-left">
+                <span class="aki-topbar-logo">AKI</span>
+                <span class="aki-topbar-icon">&lt;</span>
+                <span class="aki-topbar-title">AKI CORE SYSTEM</span>
+            </div>
+            <div class="aki-topbar-center" id="osClockDate">WEDNESDAY, 06 AUGUST 2026</div>
+            <div class="aki-topbar-right">
+                <span class="aki-topbar-center" id="osClockTime">02:30 AM</span>
+                <span class="aki-topbar-icon">📶</span>
+                <span class="aki-topbar-icon" id="btnSoundToggle">🔊</span>
+                <button class="aki-win-btn" id="btnMin">—</button>
+                <button class="aki-win-btn" id="btnMax">▢</button>
+                <button class="aki-win-btn close" id="btnClose">✕</button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <div class="aki-layout-workspace">
+            
+            <!-- Left Dock -->
+            <nav class="aki-layout-sidebar">
+                <button class="aki-nav-btn active">🏠</button>
+                <button class="aki-nav-btn">⊞</button>
+                <button class="aki-nav-btn">📁</button>
+                <button class="aki-nav-btn">&lt;/&gt;</button>
+                <button class="aki-nav-btn">⚙</button>
+            </nav>
+
+            <!-- Inner Grid (Dashboard Content) -->
+            <main class="aki-layout-desktop">
+                
+                <!-- Left Area: Greeting & Quick Actions -->
+                <div class="aki-layout-left aki-fade-in">
+                    <div class="greeting-box">
+                        <h1 class="aki-greeting" id="greetingTitle">Good Morning,<br>AETHER</h1>
+                        <p class="aki-greeting-sub">How can I assist your workflow today?</p>
+                        <div class="aki-waveform">
+                            <svg viewBox="0 0 200 40">
+                                <path d="M0,20 Q10,5 20,20 T40,20 T60,20 T80,10 T100,30 T120,5 T140,20 T160,20 T180,20 T200,20"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <div class="aki-qa-title">QUICK ACTIONS</div>
+                        <div class="aki-qa-grid">
+                            <button class="aki-glass-chip aki-glass-interactive">Open VS Code</button>
+                            <button class="aki-glass-chip aki-glass-interactive">Start Recording</button>
+                            <button class="aki-glass-chip aki-glass-interactive">Take Screenshot</button>
+                            <button class="aki-glass-chip aki-glass-interactive">Open YouTube</button>
+                            <button class="aki-glass-chip aki-glass-interactive">Search Files</button>
+                            <button class="aki-glass-chip aki-glass-interactive">System Cleanup</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Area: Glowing Orb -->
+                <div class="aki-layout-center aki-fade-in">
+                    <div class="aki-core-container">
+                        <div class="aki-core-ring-outer"></div>
+                        <div class="aki-core-ring-inner"></div>
+                        <div class="aki-core-ring-third"></div>
+                        <div class="aki-core-orb">AKI</div>
+                    </div>
+                </div>
+
+                <!-- Right Area: Status & Events -->
+                <div class="aki-layout-right aki-fade-in">
+                    <div class="aki-glass-panel">
+                        <div class="aki-panel-header">SYSTEM STATUS <span class="aki-topbar-icon">✕</span></div>
+                        <div class="aki-telemetry-row">
+                            <div class="aki-telemetry-item">
+                                <div class="aki-telemetry-label">CPU</div>
+                                <div class="aki-telemetry-val" id="osCpuVal">18%</div>
+                            </div>
+                            <div class="aki-telemetry-item">
+                                <div class="aki-telemetry-label">RAM</div>
+                                <div class="aki-telemetry-val" id="osRamVal">32%</div>
+                            </div>
+                            <div class="aki-telemetry-item">
+                                <div class="aki-telemetry-label">GPU</div>
+                                <div class="aki-telemetry-val" id="osGpuVal">12%</div>
+                            </div>
+                        </div>
+                        <div class="aki-health-row">
+                            <div class="aki-telemetry-label">SYSTEM HEALTH</div>
+                            <div class="aki-health-val" id="osHealthLabel">EXCELLENT</div>
+                        </div>
+                    </div>
+
+                    <div class="aki-glass-panel">
+                        <div class="aki-panel-header">UPCOMING EVENTS <span class="aki-topbar-icon">✕</span></div>
+                        <ul class="aki-events-list">
+                            <li><span class="icon">📅</span> Project Meeting <span class="time">10:00 AM</span></li>
+                            <li><span class="icon">📝</span> Code Review <span class="time">02:30 PM</span></li>
+                            <li><span class="icon">🏃</span> Workout <span class="time">06:00 PM</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Bottom Area: Search Bar & Icons -->
+                <div class="aki-layout-bottom aki-fade-in">
+                    <div class="aki-command-wrapper">
+                        <div class="aki-command-bar">
+                            <span class="aki-cmd-icon">🔍</span>
+                            <input type="text" class="aki-cmd-input" id="cmdInput" placeholder="Ask AKI or type a system command..." autocomplete="off">
+                            <button id="btnVoice" class="aki-cmd-voice">🎙</button>
+                        </div>
+                    </div>
+                    
+                    <div class="aki-dock">
+                        <div class="aki-dock-item brand">AKI</div>
+                        <div class="aki-dock-item">📁</div>
+                        <div class="aki-dock-item">🌍</div>
+                        <div class="aki-dock-item">🌊</div>
+                        <div class="aki-dock-item">⌨</div>
+                        <div class="aki-dock-item">🎵</div>
+                        <div class="aki-dock-item">+</div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script src="js/os_desktop.js"></script>
+</body>
+</html>

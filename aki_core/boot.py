@@ -269,6 +269,13 @@ class BootManager:
             logger.critical(message)
             raise BootError(message)
 
+        from scripts.check_dependencies import find_missing_dependencies, format_startup_error
+        missing = find_missing_dependencies()
+        if missing:
+            err = format_startup_error(missing)
+            logger.critical("Missing third-party dependencies during boot: %s", missing)
+            raise BootError(err)
+
         logger.info(
             "Runtime environment validated | python=%s.%s.%s | platform=%s",
             sys.version_info.major,

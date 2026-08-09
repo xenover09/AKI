@@ -1,0 +1,389 @@
+/* ==========================================================================
+   AKI 2035 Visual Design System - Components
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Topbar Components
+   -------------------------------------------------------------------------- */
+.aki-topbar-left, .aki-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--aki-space-4);
+}
+.aki-topbar-logo {
+    font-family: var(--aki-font-hud);
+    font-weight: 900;
+    color: var(--aki-color-neon-cyan);
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+.aki-topbar-title {
+    font-family: var(--aki-font-subhead);
+    font-size: 11px;
+    color: var(--aki-color-text-secondary);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.aki-topbar-center {
+    font-family: var(--aki-font-subhead);
+    font-size: 11px;
+    color: var(--aki-color-text-primary);
+    letter-spacing: 2px;
+}
+.aki-topbar-icon {
+    font-size: 12px;
+    color: var(--aki-color-text-secondary);
+    cursor: pointer;
+}
+.aki-win-btn {
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    color: var(--aki-color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color var(--aki-transition-fast);
+    font-size: 12px;
+    font-family: var(--aki-font-sans);
+}
+.aki-win-btn:hover { color: var(--aki-color-neon-cyan); }
+.aki-win-btn.close:hover { color: var(--aki-color-status-danger); }
+
+/* --------------------------------------------------------------------------
+   Sidebar Components
+   -------------------------------------------------------------------------- */
+.aki-nav-btn {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--aki-radius-md);
+    color: var(--aki-color-text-secondary);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--aki-transition-normal);
+}
+.aki-nav-btn:hover, .aki-nav-btn.active {
+    background: rgba(0, 240, 255, 0.05);
+    border-color: var(--aki-border-light);
+    color: var(--aki-color-neon-cyan);
+    box-shadow: var(--aki-glow-cyan-sm);
+}
+
+/* --------------------------------------------------------------------------
+   Greeting & Typography
+   -------------------------------------------------------------------------- */
+.aki-greeting {
+    font-family: var(--aki-font-subhead);
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--aki-color-text-primary);
+    line-height: 1.1;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.aki-greeting-sub {
+    font-size: 13px;
+    color: var(--aki-color-text-secondary);
+    margin-top: var(--aki-space-2);
+}
+.aki-waveform {
+    width: 140px;
+    margin-top: var(--aki-space-4);
+}
+.aki-waveform path {
+    stroke: var(--aki-color-neon-cyan);
+    stroke-width: 2;
+    fill: none;
+    filter: drop-shadow(0 0 4px var(--aki-color-neon-cyan-glow));
+}
+
+/* --------------------------------------------------------------------------
+   Quick Actions
+   -------------------------------------------------------------------------- */
+.aki-qa-title {
+    font-family: var(--aki-font-subhead);
+    font-size: 11px;
+    color: var(--aki-color-text-secondary);
+    letter-spacing: 2px;
+    margin-bottom: var(--aki-space-3);
+}
+.aki-qa-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--aki-space-2);
+}
+
+/* --------------------------------------------------------------------------
+   AI Core Reactor (User's Favorite Design - Ultimate Glow Upgrade)
+   -------------------------------------------------------------------------- */
+.aki-core-container {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Massive ambient glow behind the core */
+.aki-core-container::before {
+    content: '';
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    background: var(--aki-color-neon-cyan);
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.5;
+    z-index: 0;
+    animation: aki-pulse-slow 3s ease-in-out infinite;
+}
+
+/* Outer Data Ring (1px Dashed) */
+.aki-core-ring-outer {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border: 1px dashed rgba(0, 240, 255, 0.6); /* Brighter */
+    border-radius: 50%;
+    animation: aki-spin-cw 40s linear infinite;
+    filter: drop-shadow(0 0 5px var(--aki-color-neon-cyan)); /* Glow */
+    z-index: 1;
+    display: block;
+}
+
+/* Main Segmented Energy Ring (3px Solid Transparent) */
+.aki-core-ring-inner {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border: 3px solid transparent;
+    border-top-color: var(--aki-color-neon-cyan);
+    border-bottom-color: rgba(0, 102, 255, 0.8);
+    border-right-color: rgba(0, 240, 255, 0.4);
+    border-radius: 50%;
+    animation: aki-spin-ccw 20s linear infinite;
+    filter: drop-shadow(0 0 10px var(--aki-color-neon-cyan)); /* Intense Glow */
+    z-index: 2;
+    display: block;
+}
+
+/* Third Inner Data Track (2px Dotted) */
+.aki-core-ring-third {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border: 2px dotted var(--aki-color-neon-cyan); /* Made 2px to pop more */
+    border-radius: 50%;
+    animation: aki-spin-cw 15s linear infinite;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 8px var(--aki-color-neon-cyan)); /* Glow */
+    z-index: 3;
+    display: block;
+}
+
+/* The Core Orb (Realistic 3D Glass Sphere) */
+.aki-core-orb {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    
+    /* Transparent glass background */
+    background: radial-gradient(circle at 35% 35%, rgba(0, 255, 255, 0.1) 0%, rgba(0, 100, 255, 0.15) 60%, rgba(0, 20, 60, 0.4) 100%);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    
+    /* Complex glass shading and glowing edge */
+    box-shadow: 
+        0 0 30px rgba(0, 240, 255, 0.4), /* Outer glow */
+        inset -10px -10px 20px rgba(0, 10, 30, 0.6), /* Dark bottom edge */
+        inset 10px 10px 20px rgba(255, 255, 255, 0.3), /* Top bright rim */
+        inset 0 0 10px rgba(0, 240, 255, 0.5); /* Inner neon cyan rim */
+        
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--aki-font-hud);
+    font-size: 24px;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 0 10px #ffffff, 0 0 20px var(--aki-color-neon-cyan);
+    animation: aki-pulse-slow 2s ease-in-out infinite;
+    letter-spacing: 2px;
+    z-index: 10;
+    border: 1px solid rgba(0, 240, 255, 0.4); /* Crisp glass edge */
+}
+
+/* Sharp Glass Highlight */
+.aki-core-orb::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 15px;
+    width: 45px;
+    height: 18px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+    border-radius: 50%;
+    transform: rotate(-25deg);
+    pointer-events: none;
+}
+
+
+
+/* --------------------------------------------------------------------------
+   Telemetry Panels
+   -------------------------------------------------------------------------- */
+.aki-panel-header {
+    font-family: var(--aki-font-subhead);
+    font-size: 12px;
+    color: var(--aki-color-neon-cyan);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: var(--aki-space-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.aki-telemetry-row {
+    display: flex;
+    justify-content: space-between;
+}
+.aki-telemetry-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--aki-space-1);
+    align-items: center;
+}
+.aki-telemetry-label {
+    font-size: 10px;
+    color: var(--aki-color-text-secondary);
+}
+.aki-telemetry-val {
+    font-family: var(--aki-font-hud);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--aki-color-neon-cyan);
+    text-shadow: 0 0 8px var(--aki-color-neon-cyan-glow);
+}
+.aki-health-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--aki-border-subtle);
+    padding-top: var(--aki-space-3);
+    margin-top: var(--aki-space-2);
+}
+.aki-health-val {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--aki-color-status-success);
+    text-shadow: 0 0 8px var(--aki-color-status-success-glow);
+}
+
+/* Events List */
+.aki-events-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--aki-space-3);
+    font-size: 11px;
+}
+.aki-events-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--aki-space-2);
+}
+.aki-events-list .time {
+    margin-left: auto;
+    color: var(--aki-color-text-secondary);
+    font-size: 10px;
+}
+.aki-events-list .icon {
+    color: var(--aki-color-neon-cyan);
+}
+
+/* --------------------------------------------------------------------------
+   Command Center & Dock
+   -------------------------------------------------------------------------- */
+.aki-command-wrapper {
+    width: 100%;
+    max-width: 500px;
+}
+.aki-command-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--aki-space-3);
+    background: rgba(2, 6, 15, 0.7);
+    backdrop-filter: var(--aki-blur-xl);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 4px;
+    padding: var(--aki-space-3) var(--aki-space-4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    transition: all var(--aki-transition-normal);
+}
+.aki-command-bar:focus-within {
+    border-color: var(--aki-border-focus);
+    box-shadow: var(--aki-shadow-lg), var(--aki-glow-cyan-md);
+}
+.aki-cmd-icon {
+    color: var(--aki-color-text-secondary);
+    font-size: 14px;
+}
+.aki-cmd-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--aki-color-text-primary);
+    font-family: var(--aki-font-sans);
+    font-size: 13px;
+}
+.aki-cmd-input::placeholder {
+    color: var(--aki-color-text-muted);
+}
+.aki-cmd-voice {
+    background: transparent;
+    border: none;
+    color: var(--aki-color-neon-cyan);
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.aki-dock {
+    display: flex;
+    gap: var(--aki-space-3);
+}
+.aki-dock-item {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--aki-radius-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all var(--aki-transition-fast);
+}
+.aki-dock-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+.aki-dock-item.brand {
+    border-color: var(--aki-border-accent);
+    color: var(--aki-color-neon-cyan);
+    font-family: var(--aki-font-hud);
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: var(--aki-glow-cyan-sm);
+}

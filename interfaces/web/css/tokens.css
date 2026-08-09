@@ -1,0 +1,107 @@
+/* ==========================================================================
+   AKI 2035 Visual Design System - CSS Custom Property Tokens
+   Visual Architecture: VisionOS + JARVIS/EDITH + Cyberpunk Minimal
+   ========================================================================== */
+
+:root {
+    /* ----------------------------------------------------------------------
+       1. COLOR PALETTE (2035 Void Obsidian & Neon Quantum Accents)
+       ---------------------------------------------------------------------- */
+    /* Core Void Surfaces */
+    --aki-color-bg-void: #020611;
+    --aki-color-bg-navy: #061326;
+    --aki-color-bg-surface-base: rgba(6, 19, 38, 0.45);
+    --aki-color-bg-surface-elevated: rgba(6, 19, 38, 0.65);
+    --aki-color-bg-surface-hover: rgba(14, 28, 54, 0.82);
+    --aki-color-bg-input: rgba(5, 12, 24, 0.75);
+
+    /* Brand & Accent Highlights */
+    --aki-color-neon-cyan: #00F0FF;
+    --aki-color-neon-cyan-glow: rgba(0, 240, 255, 0.35);
+    --aki-color-electric-blue: #0066FF;
+    --aki-color-electric-glow: rgba(0, 102, 255, 0.35);
+
+    /* Status Indicators */
+    --aki-color-status-success: #00FF9D;
+    --aki-color-status-success-glow: rgba(0, 255, 157, 0.30);
+    --aki-color-status-warning: #FFD166;
+    --aki-color-status-warning-glow: rgba(255, 209, 102, 0.30);
+    --aki-color-status-danger: #FF4D67;
+    --aki-color-status-danger-glow: rgba(255, 77, 103, 0.35);
+
+    /* Text Hierarchy */
+    --aki-color-text-primary: #f0f6fc;
+    --aki-color-text-secondary: #94a3b8;
+    --aki-color-text-muted: #475569;
+    --aki-color-text-accent: #00f0ff;
+
+    /* Border Tokens */
+    --aki-border-subtle: rgba(255, 255, 255, 0.08);
+    --aki-border-light: rgba(0, 240, 255, 0.20);
+    --aki-border-accent: rgba(0, 240, 255, 0.45);
+
+    /* ----------------------------------------------------------------------
+       2. GLASSMORPHISM & BLUR LEVELS
+       ---------------------------------------------------------------------- */
+    --aki-blur-sm: blur(8px) saturate(120%);
+    --aki-blur-md: blur(16px) saturate(130%);
+    --aki-blur-lg: blur(20px) saturate(140%);
+    --aki-blur-xl: blur(40px) saturate(150%);
+
+    /* ----------------------------------------------------------------------
+       3. SHADOWS & GLOW HALOS
+       ---------------------------------------------------------------------- */
+    --aki-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+    --aki-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.50);
+    --aki-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.65);
+    
+    --aki-glow-cyan-sm: 0 0 12px var(--aki-color-neon-cyan-glow);
+    --aki-glow-cyan-md: 0 0 24px var(--aki-color-neon-cyan-glow);
+    --aki-glow-blue-md: 0 0 24px var(--aki-color-electric-glow);
+    --aki-glow-success: 0 0 16px var(--aki-color-status-success-glow);
+
+    /* ----------------------------------------------------------------------
+       4. BORDER RADII (Futuristic HUD Radii)
+       ---------------------------------------------------------------------- */
+    --aki-radius-xs: 2px;
+    --aki-radius-sm: 4px;
+    --aki-radius-md: 8px;
+    --aki-radius-lg: 12px;
+    --aki-radius-pill: 9999px;
+
+    /* ----------------------------------------------------------------------
+       5. SPACING GRID & Z-INDEX SCALES
+       ---------------------------------------------------------------------- */
+    --aki-space-1: 4px;
+    --aki-space-2: 8px;
+    --aki-space-3: 12px;
+    --aki-space-4: 16px;
+    --aki-space-6: 24px;
+    --aki-space-8: 32px;
+    --aki-space-10: 40px;
+    --aki-space-12: 48px;
+    --aki-space-16: 64px;
+
+    /* ----------------------------------------------------------------------
+       6. TYPOGRAPHY SCALES
+       ---------------------------------------------------------------------- */
+    --aki-font-hud: 'Orbitron', -apple-system, sans-serif;
+    --aki-font-subhead: 'Rajdhani', sans-serif;
+    --aki-font-sans: 'Inter', -apple-system, blinkmacsystemfont, sans-serif;
+    --aki-font-mono: 'Fira Code', monospace;
+
+    --aki-text-xs: 0.75rem;     /* 12px */
+    --aki-text-sm: 0.875rem;    /* 14px */
+    --aki-text-base: 1rem;      /* 16px */
+    --aki-text-lg: 1.125rem;    /* 18px */
+    --aki-text-xl: 1.25rem;     /* 20px */
+    --aki-text-2xl: 1.5rem;     /* 24px */
+    --aki-text-3xl: 2rem;       /* 32px */
+
+    /* ----------------------------------------------------------------------
+       6. MOTION & SPRINGS
+       ---------------------------------------------------------------------- */
+    --aki-transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    --aki-transition-normal: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    --aki-transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}

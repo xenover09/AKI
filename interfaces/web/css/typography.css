@@ -1,0 +1,111 @@
+/* ==========================================================================
+   AKI 2035 Visual Design System - Typography Rules
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+
+/* Typography Utility Classes */
+.aki-font-hud {
+    font-family: var(--aki-font-hud);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.aki-font-subhead {
+    font-family: var(--aki-font-subhead);
+    letter-spacing: 1px;
+}
+
+.aki-font-sans {
+    font-family: var(--aki-font-sans);
+}
+
+.aki-font-mono {
+    font-family: var(--aki-font-mono);
+}
+
+/* Heading Sizes */
+.aki-title-4xl {
+    font-family: var(--aki-font-hud);
+    font-size: var(--aki-text-4xl);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--aki-color-text-primary);
+    letter-spacing: 2px;
+}
+
+.aki-title-3xl {
+    font-family: var(--aki-font-hud);
+    font-size: var(--aki-text-3xl);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--aki-color-text-primary);
+    letter-spacing: 1.5px;
+}
+
+.aki-title-2xl {
+    font-family: var(--aki-font-hud);
+    font-size: var(--aki-text-2xl);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--aki-color-text-primary);
+    letter-spacing: 1.5px;
+}
+
+.aki-title-xl {
+    font-family: var(--aki-font-hud);
+    font-size: var(--aki-text-xl);
+    font-weight: 700;
+    color: var(--aki-color-text-primary);
+    letter-spacing: 1px;
+}
+
+.aki-title-lg {
+    font-family: var(--aki-font-subhead);
+    font-size: var(--aki-text-lg);
+    font-weight: 600;
+    color: var(--aki-color-text-primary);
+    letter-spacing: 1px;
+}
+
+.aki-body-base {
+    font-family: var(--aki-font-sans);
+    font-size: var(--aki-text-base);
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--aki-color-text-secondary);
+}
+
+.aki-body-sm {
+    font-family: var(--aki-font-sans);
+    font-size: var(--aki-text-sm);
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--aki-color-text-secondary);
+}
+
+.aki-label-hud {
+    font-family: var(--aki-font-subhead);
+    font-size: var(--aki-text-xs);
+    font-weight: 700;
+    color: var(--aki-color-text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.aki-mono-stream {
+    font-family: var(--aki-font-mono);
+    font-size: var(--aki-text-xs);
+    color: var(--aki-color-text-secondary);
+    line-height: 1.4;
+}
+
+/* Color Modifier Classes */
+.text-cyan { color: var(--aki-color-neon-cyan); }
+.text-blue { color: var(--aki-color-electric-blue); }
+.text-success { color: var(--aki-color-status-success); }
+.text-warning { color: var(--aki-color-status-warning); }
+.text-danger { color: var(--aki-color-status-danger); }
+.text-primary { color: var(--aki-color-text-primary); }
+.text-secondary { color: var(--aki-color-text-secondary); }
+.text-muted { color: var(--aki-color-text-muted); }

@@ -12,7 +12,7 @@ import sys
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 
-from desktop.main_window_old import MainWindow
+from desktop.main_window import MainWindow
 from desktop.splash import SplashScreen
 from desktop.themes.blue_theme import BlueTheme
 
@@ -54,11 +54,11 @@ class AKIApplication:
 
     def _launch_main_window(self) -> None:
         """Close the splash screen and reveal the main window."""
-        self._main_window = MainWindow(theme=self._theme)
+        self._main_window = MainWindow()
         self._main_window.show()
 
         if self._splash is not None:
-            self._splash.finish(self._main_window)
+            self._splash.close()
             self._splash = None
 
 

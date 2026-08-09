@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKI // 2035 Visual Design System Architecture Showcase</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        /* Specific showcase layout styling */
+        .showcase-area {
+            position: relative;
+            z-index: var(--aki-z-panel);
+            width: 100%;
+            height: 100%;
+            padding: var(--aki-space-8);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--aki-space-8);
+        }
+        .showcase-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--aki-space-4);
+        }
+        .swatch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--aki-space-4);
+        }
+        .swatch-card {
+            padding: var(--aki-space-4);
+            border-radius: var(--aki-radius-md);
+            border: 1px solid var(--aki-border-light);
+            display: flex;
+            flex-direction: column;
+            gap: var(--aki-space-2);
+        }
+        .swatch-box {
+            height: 48px;
+            border-radius: var(--aki-radius-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="aki-shell">
+        <div class="showcase-area">
+
+            <!-- Showcase Header -->
+            <header class="aki-card">
+                <div class="aki-card-header">
+                    <div>
+                        <h1 class="aki-title-3xl text-cyan">AKI // 2035 DESIGN SYSTEM</h1>
+                        <p class="aki-body-base">Official Visual Language & Reusable UI Component Architecture for AKI Operating System.</p>
+                    </div>
+                    <span class="aki-badge aki-badge-info">FOUNDATION V1.0</span>
+                </div>
+            </header>
+
+            <!-- 1. Color Palette Tokens -->
+            <section class="showcase-section">
+                <h2 class="aki-title-xl">1. Color Palette Tokens</h2>
+                <div class="swatch-grid">
+                    <div class="swatch-card aki-glass-panel">
+                        <div class="swatch-box" style="background: var(--aki-color-bg-void); border: 1px solid var(--aki-border-light);"></div>
+                        <span class="aki-label-hud">Void Obsidian</span>
+                        <span class="aki-mono-stream">#030712</span>
+                    </div>
+                    <div class="swatch-card aki-glass-panel">
+                        <div class="swatch-box" style="background: var(--aki-color-neon-cyan); box-shadow: var(--aki-glow-cyan-sm);"></div>
+                        <span class="aki-label-hud">Neon Cyan</span>
+                        <span class="aki-mono-stream">#00f0ff</span>
+                    </div>
+                    <div class="swatch-card aki-glass-panel">
+                        <div class="swatch-box" style="background: var(--aki-color-electric-blue); box-shadow: var(--aki-glow-blue-md);"></div>
+                        <span class="aki-label-hud">Electric Blue</span>
+                        <span class="aki-mono-stream">#0066ff</span>
+                    </div>
+                    <div class="swatch-card aki-glass-panel">
+                        <div class="swatch-box" style="background: var(--aki-color-status-success); box-shadow: var(--aki-glow-success);"></div>
+                        <span class="aki-label-hud">Emerald Readiness</span>
+                        <span class="aki-mono-stream">#00ff9d</span>
+                    </div>
+                    <div class="swatch-card aki-glass-panel">
+                        <div class="swatch-box" style="background: var(--aki-color-status-warning);"></div>
+                        <span class="aki-label-hud">Amber Warning</span>
+                        <span class="aki-mono-stream">#ffaa00</span>
+                    </div>
+                    <div class="swatch-card aki-glass-panel">
+                        <div class="swatch-box" style="background: var(--aki-color-status-danger); box-shadow: var(--aki-glow-danger);"></div>
+                        <span class="aki-label-hud">Crimson Alert</span>
+                        <span class="aki-mono-stream">#ff2a55</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Typography Scale -->
+            <section class="showcase-section">
+                <h2 class="aki-title-xl">2. Typography Hierarchy</h2>
+                <div class="aki-card">
+                    <div class="aki-title-4xl">4XL HUD Title (44px Orbitron)</div>
+                    <div class="aki-title-3xl">3XL Title Scale (32px Orbitron)</div>
+                    <div class="aki-title-2xl text-cyan">2XL Quantum Heading (24px Orbitron)</div>
+                    <div class="aki-title-lg">LG Subhead Scale (18px Rajdhani)</div>
+                    <p class="aki-body-base">Body Base text rendered in Inter typography for maximum legibility across futuristic OS interfaces.</p>
+                    <span class="aki-label-hud">HUD Label Tracking (12px Rajdhani Uppercase)</span>
+                    <div class="aki-mono-stream">[SYS_LOG] 2035-08-07T21:48:30Z // TELEMETRY STREAM ACTIVE // LATENCY 1.2MS</div>
+                </div>
+            </section>
+
+            <!-- 3. Glassmorphism Elevation & Surfaces -->
+            <section class="showcase-section">
+                <h2 class="aki-title-xl">3. Glassmorphism Surfaces</h2>
+                <div class="aki-grid aki-grid-3">
+                    <div class="aki-glass-panel" style="padding: 24px;">
+                        <h3 class="aki-title-lg">Standard Glass Panel</h3>
+                        <p class="aki-body-sm">Backdrop blur 24px with 16% cyan light border line.</p>
+                    </div>
+                    <div class="aki-glass-panel-elevated" style="padding: 24px;">
+                        <h3 class="aki-title-lg text-cyan">Elevated VisionOS Surface</h3>
+                        <p class="aki-body-sm">Heavy 40px blur with elevated drop shadow and accent halo.</p>
+                    </div>
+                    <div class="aki-glass-panel aki-glass-panel-interactive" style="padding: 24px;">
+                        <h3 class="aki-title-lg">Interactive Glass Surface</h3>
+                        <p class="aki-body-sm">Hover over this panel to preview smooth elevation spring animation.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Reusable Buttons -->
+            <section class="showcase-section">
+                <h2 class="aki-title-xl">4. Reusable Button Library</h2>
+                <div class="aki-card">
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
+                        <button class="aki-btn aki-btn-primary">Primary Cyan</button>
+                        <button class="aki-btn aki-btn-secondary">Secondary Glass</button>
+                        <button class="aki-btn aki-btn-ghost">Ghost Action</button>
+                        <button class="aki-btn aki-btn-hud">HUD Action</button>
+                        <button class="aki-btn aki-btn-danger">Danger Action</button>
+                        <button class="aki-btn-icon">⚡</button>
+                        <button class="aki-btn-icon">⚙</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Input Controls -->
+            <section class="showcase-section">
+                <h2 class="aki-title-xl">5. Reusable Inputs & Form Controls</h2>
+                <div class="aki-grid aki-grid-2">
+                    <div class="aki-card">
+                        <div class="aki-input-group">
+                            <label class="aki-input-label">Command Prompt / Search Input</label>
+                            <input type="text" class="aki-input" placeholder="Execute neural command or search OS memory...">
+                        </div>
+                    </div>
+                    <div class="aki-card">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span class="aki-label-hud">Neural Sync Engine</span>
+                            <label class="aki-toggle">
+                                <input type="checkbox" checked>
+                                <span class="aki-toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div style="margin-top: 16px;" class="aki-input-group">
+                            <label class="aki-input-label">Frequency Level</label>
+                            <input type="range" class="aki-slider" min="0" max="100" value="75">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Notifications, Badges & Indicators -->
+            <section class="showcase-section">
+                <h2 class="aki-title-xl">6. Status Badges & Notifications</h2>
+                <div class="aki-card">
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                        <span class="aki-badge aki-badge-success"><span class="aki-status-dot animate-pulse-dot"></span> SYSTEM ONLINE</span>
+                        <span class="aki-badge aki-badge-warning">HIGH LOAD</span>
+                        <span class="aki-badge aki-badge-danger">ALERT</span>
+                        <span class="aki-badge aki-badge-info">STANDBY</span>
+                    </div>
+
+                    <div style="margin-top: 16px;" class="aki-toast">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="text-cyan">📡</span>
+                            <span>Neural Core initialized successfully with zero integrity faults.</span>
+                        </div>
+                        <button class="aki-btn-icon" style="width:24px; height:24px;">✕</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Progress Bars & Telemetry -->
+            <section class="showcase-section">
+                <h2 class="aki-title-xl">7. Telemetry & Progress Bars</h2>
+                <div class="aki-card">
+                    <div class="aki-input-group">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="aki-label-hud">CPU Core Matrix Load</span>
+                            <span class="aki-font-hud text-cyan">76%</span>
+                        </div>
+                        <div class="aki-progress-container">
+                            <div class="aki-progress-bar" style="width: 76%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</body>
+</html>
