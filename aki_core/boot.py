@@ -1,4 +1,4 @@
-"""
+﻿"""
 Boot orchestration for AKI.
 
 The Boot Manager is the single startup controller for the entire
@@ -14,7 +14,7 @@ the outcome of each one:
     7. Display Boot Complete
 
 No other module is permitted to reorder, skip, or duplicate this
-sequence — every future subsystem AKI gains is wired in here, in the
+sequence â€” every future subsystem AKI gains is wired in here, in the
 order above, not scattered across `Application` or `main.py`.
 """
 
@@ -27,6 +27,7 @@ from logging import Logger
 from pathlib import Path
 
 from config.manager import ConfigManager
+from memory.memory_service import MemoryService
 from config.settings import Settings
 from logs.logger import configure_logging
 
@@ -68,8 +69,8 @@ class WorkspaceLayout:
 
     Distinct from the Configuration Engine's `AppPaths`: `AppPaths`
     (see `config/paths.py`) stores *configuration*, `WorkspaceLayout`
-    stores *runtime data* — the future database file, cached artifacts,
-    and future subsystem state — rooted under that same
+    stores *runtime data* â€” the future database file, cached artifacts,
+    and future subsystem state â€” rooted under that same
     platform-appropriate application directory.
 
     Attributes:
@@ -136,6 +137,7 @@ class BootResult:
     config_manager: ConfigManager
     logger: Logger
     workspace: WorkspaceLayout
+    memory_service: MemoryService
     stages: list[BootStageResult] = field(default_factory=list)
 
 
@@ -205,9 +207,9 @@ class BootManager:
                 BootStageResult("Database", BootStageStatus.PLACEHOLDER, database_detail)
             )
 
-            memory_detail = self._init_memory_placeholder(workspace, logger)
+            memory_service, memory_detail = self._init_memory(workspace, logger)
             stages.append(
-                BootStageResult("Memory", BootStageStatus.PLACEHOLDER, memory_detail)
+                BootStageResult("Memory", BootStageStatus.COMPLETED, memory_detail)
             )
         except BootError:
             raise
@@ -220,6 +222,7 @@ class BootManager:
             config_manager=config_manager,
             logger=logger,
             workspace=workspace,
+            memory_service=memory_service,
             stages=stages,
         )
         self._display_boot_complete(result)
@@ -227,7 +230,7 @@ class BootManager:
 
     def _init_configuration_engine(self) -> ConfigManager:
         """
-        Stage 1 — Initialize the Configuration Engine.
+        Stage 1 â€” Initialize the Configuration Engine.
 
         Returns:
             An initialized `ConfigManager`. Its own constructor already
@@ -237,7 +240,7 @@ class BootManager:
 
     def _init_logger(self) -> tuple[Settings, Logger]:
         """
-        Stage 2 — Load infrastructure settings and initialize the logger.
+        Stage 2 â€” Load infrastructure settings and initialize the logger.
 
         Returns:
             A tuple of the loaded `Settings` and the configured root
@@ -252,7 +255,7 @@ class BootManager:
 
     def _validate_runtime_environment(self, logger: Logger) -> None:
         """
-        Stage 3 — Validate that the runtime environment meets AKI's
+        Stage 3 â€” Validate that the runtime environment meets AKI's
         minimum requirements.
 
         Args:
@@ -288,7 +291,7 @@ class BootManager:
         self, config_manager: ConfigManager, logger: Logger
     ) -> WorkspaceLayout:
         """
-        Stage 4 — Create AKI's runtime workspace folders if missing.
+        Stage 4 â€” Create AKI's runtime workspace folders if missing.
 
         Args:
             config_manager: The initialized Configuration Engine, used
@@ -306,7 +309,7 @@ class BootManager:
 
     def _init_database_placeholder(self, workspace: WorkspaceLayout, logger: Logger) -> str:
         """
-        Stage 5 — Reserve the database location. No database engine is
+        Stage 5 â€” Reserve the database location. No database engine is
         wired in yet; this stage exists so the boot sequence has a fixed
         slot for it when it is implemented.
 
@@ -317,30 +320,33 @@ class BootManager:
         Returns:
             A human-readable detail string describing the placeholder.
         """
-        detail = f"Reserved at {workspace.database_dir} — no database engine implemented yet."
+        detail = f"Reserved at {workspace.database_dir} â€” no database engine implemented yet."
         logger.info("Database initialization is a placeholder | %s", detail)
         return detail
 
-    def _init_memory_placeholder(self, workspace: WorkspaceLayout, logger: Logger) -> str:
+    def _init_memory(
+        self,
+        workspace: WorkspaceLayout,
+        logger: Logger,
+    ) -> tuple[MemoryService, str]:
         """
-        Stage 6 — Reserve the memory subsystem location. No memory
-        subsystem is wired in yet; this stage exists so the boot
-        sequence has a fixed slot for it when it is implemented.
-
-        Args:
-            workspace: The resolved workspace layout.
-            logger: The configured logger, used to report the outcome.
-
-        Returns:
-            A human-readable detail string describing the placeholder.
+        Stage 6 - Initialize AKI's memory subsystem.
         """
-        detail = f"Reserved at {workspace.memory_dir} — no memory subsystem implemented yet."
-        logger.info("Memory initialization is a placeholder | %s", detail)
-        return detail
+
+        memory_service = MemoryService()
+
+        detail = (
+            f"Memory subsystem initialized | "
+            f"workspace={workspace.memory_dir}"
+        )
+
+        logger.info(detail)
+
+        return memory_service, detail
 
     def _display_boot_complete(self, result: BootResult) -> None:
         """
-        Stage 7 — Display a summary confirming boot completion.
+        Stage 7 â€” Display a summary confirming boot completion.
 
         Args:
             result: The full boot result, used to render a per-stage
@@ -351,3 +357,4 @@ class BootManager:
         for stage in result.stages:
             result.logger.info(" - %-32s [%s]", stage.name, stage.status.value.upper())
         result.logger.info("=" * 48)
+

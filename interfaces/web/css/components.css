@@ -121,7 +121,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   AI Core Reactor (User's Favorite Design - Ultimate Glow Upgrade)
+   AI Core Reactor (Target Design)
    -------------------------------------------------------------------------- */
 .aki-core-container {
     position: relative;
@@ -132,108 +132,115 @@
     justify-content: center;
 }
 
-/* Massive ambient glow behind the core */
-.aki-core-container::before {
-    content: '';
-    position: absolute;
-    width: 140px;
-    height: 140px;
-    background: var(--aki-color-neon-cyan);
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.5;
-    z-index: 0;
-    animation: aki-pulse-slow 3s ease-in-out infinite;
-}
-
-/* Outer Data Ring (1px Dashed) */
+/* Outer Rings */
 .aki-core-ring-outer {
     position: absolute;
-    width: 300px;
-    height: 300px;
-    border: 1px dashed rgba(0, 240, 255, 0.6); /* Brighter */
+    width: 290px;
+    height: 290px;
+    border: 1px solid rgba(0, 200, 255, 0.5);
     border-radius: 50%;
     animation: aki-spin-cw 40s linear infinite;
-    filter: drop-shadow(0 0 5px var(--aki-color-neon-cyan)); /* Glow */
-    z-index: 1;
-    display: block;
+    z-index: 2;
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
+}
+.aki-core-ring-outer::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border: 1px dashed rgba(0, 220, 255, 0.6);
+    border-radius: 50%;
+}
+.aki-core-ring-outer::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border: 1px solid rgba(0, 220, 255, 0.7);
+    border-radius: 50%;
+    border-left-color: transparent;
+    border-right-color: transparent;
 }
 
-/* Main Segmented Energy Ring (3px Solid Transparent) */
+/* Middle Rings */
 .aki-core-ring-inner {
     position: absolute;
-    width: 240px;
-    height: 240px;
-    border: 3px solid transparent;
-    border-top-color: var(--aki-color-neon-cyan);
-    border-bottom-color: rgba(0, 102, 255, 0.8);
-    border-right-color: rgba(0, 240, 255, 0.4);
+    width: 220px;
+    height: 220px;
+    border: 2px solid rgba(0, 240, 255, 0.8);
     border-radius: 50%;
-    animation: aki-spin-ccw 20s linear infinite;
-    filter: drop-shadow(0 0 10px var(--aki-color-neon-cyan)); /* Intense Glow */
-    z-index: 2;
-    display: block;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    animation: aki-spin-ccw 25s linear infinite;
+    box-shadow: 0 0 20px rgba(0, 220, 255, 0.6), inset 0 0 20px rgba(0, 220, 255, 0.6);
+    z-index: 3;
+}
+.aki-core-ring-inner::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border: 1px solid rgba(0, 220, 255, 0.6);
+    border-radius: 50%;
 }
 
-/* Third Inner Data Track (2px Dotted) */
+/* Innermost Rings */
 .aki-core-ring-third {
     position: absolute;
-    width: 180px;
-    height: 180px;
-    border: 2px dotted var(--aki-color-neon-cyan); /* Made 2px to pop more */
+    width: 160px;
+    height: 160px;
+    border: 3px solid rgba(0, 255, 255, 1);
     border-radius: 50%;
     animation: aki-spin-cw 15s linear infinite;
-    opacity: 0.8;
-    filter: drop-shadow(0 0 8px var(--aki-color-neon-cyan)); /* Glow */
-    z-index: 3;
-    display: block;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), inset 0 0 30px rgba(0, 255, 255, 0.8);
+    z-index: 4;
+}
+.aki-core-ring-third::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px dashed rgba(0, 255, 255, 0.7);
+    border-radius: 50%;
+}
+.aki-core-ring-third::after {
+    content: '';
+    position: absolute;
+    inset: -24px;
+    border: 1px solid rgba(0, 255, 255, 0.5);
+    border-radius: 50%;
+    border-left-color: transparent;
+    border-right-color: transparent;
 }
 
-/* The Core Orb (Realistic 3D Glass Sphere) */
+/* The Core Orb (Text AKI) */
 .aki-core-orb {
     position: relative;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    
-    /* Transparent glass background */
-    background: radial-gradient(circle at 35% 35%, rgba(0, 255, 255, 0.1) 0%, rgba(0, 100, 255, 0.15) 60%, rgba(0, 20, 60, 0.4) 100%);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    
-    /* Complex glass shading and glowing edge */
-    box-shadow: 
-        0 0 30px rgba(0, 240, 255, 0.4), /* Outer glow */
-        inset -10px -10px 20px rgba(0, 10, 30, 0.6), /* Dark bottom edge */
-        inset 10px 10px 20px rgba(255, 255, 255, 0.3), /* Top bright rim */
-        inset 0 0 10px rgba(0, 240, 255, 0.5); /* Inner neon cyan rim */
-        
+    z-index: 10;
+    font-family: var(--aki-font-hud), sans-serif;
+    font-size: 58px;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 0 15px #00ffff, 0 0 30px #00bfff, 0 0 50px #0077ff;
+    letter-spacing: 4px;
+    width: auto;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--aki-font-hud);
-    font-size: 24px;
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow: 0 0 10px #ffffff, 0 0 20px var(--aki-color-neon-cyan);
-    animation: aki-pulse-slow 2s ease-in-out infinite;
-    letter-spacing: 2px;
-    z-index: 10;
-    border: 1px solid rgba(0, 240, 255, 0.4); /* Crisp glass edge */
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
-/* Sharp Glass Highlight */
-.aki-core-orb::after {
+/* Ambient glow moved here */
+.aki-core-orb::before {
     content: '';
     position: absolute;
-    top: 5px;
-    left: 15px;
-    width: 45px;
-    height: 18px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+    width: 250px;
+    height: 250px;
+    background: rgba(0, 191, 255, 0.35);
     border-radius: 50%;
-    transform: rotate(-25deg);
-    pointer-events: none;
+    filter: blur(80px);
+    z-index: -1;
 }
 
 
@@ -316,26 +323,27 @@
 .aki-command-wrapper {
     width: 100%;
     max-width: 500px;
+    margin-bottom: 15px; /* Add space below command bar */
 }
 .aki-command-bar {
     display: flex;
     align-items: center;
     gap: var(--aki-space-3);
-    background: rgba(2, 6, 15, 0.7);
+    background: rgba(4, 12, 30, 0.6);
     backdrop-filter: var(--aki-blur-xl);
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    border-radius: 4px;
-    padding: var(--aki-space-3) var(--aki-space-4);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    border: 1px solid rgba(0, 191, 255, 0.3);
+    border-radius: 20px;
+    padding: 12px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(0, 191, 255, 0.1);
     transition: all var(--aki-transition-normal);
 }
 .aki-command-bar:focus-within {
-    border-color: var(--aki-border-focus);
-    box-shadow: var(--aki-shadow-lg), var(--aki-glow-cyan-md);
+    border-color: rgba(0, 240, 255, 0.6);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.2);
 }
 .aki-cmd-icon {
-    color: var(--aki-color-text-secondary);
-    font-size: 14px;
+    color: rgba(0, 191, 255, 0.8);
+    font-size: 16px;
 }
 .aki-cmd-input {
     flex: 1;
@@ -344,7 +352,7 @@
     outline: none;
     color: var(--aki-color-text-primary);
     font-family: var(--aki-font-sans);
-    font-size: 13px;
+    font-size: 14px;
 }
 .aki-cmd-input::placeholder {
     color: var(--aki-color-text-muted);
@@ -353,37 +361,102 @@
     background: transparent;
     border: none;
     color: var(--aki-color-neon-cyan);
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
+    transition: all 0.2s;
+}
+.aki-cmd-voice:hover {
+    text-shadow: 0 0 10px var(--aki-color-neon-cyan);
+    transform: scale(1.1);
 }
 
 .aki-dock {
     display: flex;
-    gap: var(--aki-space-3);
+    gap: 10px;
+    background: rgba(4, 12, 30, 0.6);
+    backdrop-filter: var(--aki-blur-xl);
+    border: 1px solid rgba(0, 191, 255, 0.25);
+    border-radius: 16px;
+    padding: 10px 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.9), inset 0 0 20px rgba(0, 191, 255, 0.1);
 }
 .aki-dock-item {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--aki-radius-md);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: rgba(0, 150, 255, 0.1);
+    border: 1px solid rgba(0, 191, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
-    transition: all var(--aki-transition-fast);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 .aki-dock-item:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+    background: rgba(0, 191, 255, 0.25);
+    border-color: rgba(0, 240, 255, 0.6);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.5), 0 0 15px rgba(0, 240, 255, 0.4);
+    color: #fff;
 }
 .aki-dock-item.brand {
-    border-color: var(--aki-border-accent);
-    color: var(--aki-color-neon-cyan);
+    position: relative;
+    width: 75px;
+    border-color: rgba(0, 240, 255, 0.6);
+    background: rgba(0, 240, 255, 0.05);
+    color: #ffffff;
     font-family: var(--aki-font-hud);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
-    box-shadow: var(--aki-glow-cyan-sm);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.15);
+}
+.aki-dock-item.brand::before {
+    content: '';
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(0, 255, 255, 0.9);
+    border-radius: 50%;
+    -webkit-mask: conic-gradient(
+        transparent 0deg 8deg, 
+        black 8deg 82deg, 
+        transparent 82deg 98deg, 
+        black 98deg 172deg, 
+        transparent 172deg 188deg, 
+        black 188deg 262deg, 
+        transparent 262deg 278deg, 
+        black 278deg 352deg, 
+        transparent 352deg 360deg
+    );
+    mask: conic-gradient(
+        transparent 0deg 8deg, 
+        black 8deg 82deg, 
+        transparent 82deg 98deg, 
+        black 98deg 172deg, 
+        transparent 172deg 188deg, 
+        black 188deg 262deg, 
+        transparent 262deg 278deg, 
+        black 278deg 352deg, 
+        transparent 352deg 360deg
+    );
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), inset 0 0 10px rgba(0, 255, 255, 0.8);
+    animation: aki-spin-cw 15s linear infinite;
+}
+.aki-dock-item.brand::after {
+    content: '';
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border: 1px dashed rgba(0, 240, 255, 0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: aki-spin-ccw 20s linear infinite;
+}
+.aki-dock-item.brand:hover::before {
+    border-color: #fff;
+    box-shadow: 0 0 15px #fff, inset 0 0 15px rgba(0, 255, 255, 1);
 }
