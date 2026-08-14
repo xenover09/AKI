@@ -112,3 +112,7 @@ Foundation only. Domain, Application (use cases), Infrastructure
 (persistence), and Presentation (PySide6 GUI) layers are intentionally not
 yet implemented and will be added one module at a time, with explicit
 confirmation before each step.
+
+## Author 
+
+Xenover ! 
