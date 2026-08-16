@@ -27,6 +27,7 @@ from logging import Logger
 from pathlib import Path
 
 from config.manager import ConfigManager
+from database.database_service import DatabaseService
 from memory.memory_service import MemoryService
 from config.settings import Settings
 from logs.logger import configure_logging
@@ -137,6 +138,7 @@ class BootResult:
     config_manager: ConfigManager
     logger: Logger
     workspace: WorkspaceLayout
+    database_service: DatabaseService
     memory_service: MemoryService
     stages: list[BootStageResult] = field(default_factory=list)
 
@@ -202,9 +204,9 @@ class BootManager:
             workspace = self._create_workspace_folders(config_manager, logger)
             stages.append(BootStageResult("Workspace Folders", BootStageStatus.COMPLETED))
 
-            database_detail = self._init_database_placeholder(workspace, logger)
+            database_service, database_detail = self._init_database(workspace, logger)
             stages.append(
-                BootStageResult("Database", BootStageStatus.PLACEHOLDER, database_detail)
+                BootStageResult("Database", BootStageStatus.COMPLETED, database_detail)
             )
 
             memory_service, memory_detail = self._init_memory(workspace, logger)
@@ -222,6 +224,7 @@ class BootManager:
             config_manager=config_manager,
             logger=logger,
             workspace=workspace,
+            database_service=database_service,
             memory_service=memory_service,
             stages=stages,
         )
@@ -307,22 +310,28 @@ class BootManager:
         logger.info("Workspace folders ready | root=%s", workspace.workspace_dir)
         return workspace
 
-    def _init_database_placeholder(self, workspace: WorkspaceLayout, logger: Logger) -> str:
+    def _init_database(
+        self,
+        workspace: WorkspaceLayout,
+        logger: Logger,
+    ) -> tuple[DatabaseService, str]:
         """
-        Stage 5 â€” Reserve the database location. No database engine is
-        wired in yet; this stage exists so the boot sequence has a fixed
-        slot for it when it is implemented.
-
-        Args:
-            workspace: The resolved workspace layout.
-            logger: The configured logger, used to report the outcome.
-
-        Returns:
-            A human-readable detail string describing the placeholder.
+        Stage 5 - Initialize AKI's SQLite database.
         """
-        detail = f"Reserved at {workspace.database_dir} â€” no database engine implemented yet."
-        logger.info("Database initialization is a placeholder | %s", detail)
-        return detail
+
+        database_path = workspace.database_dir / "aki.db"
+
+        database_service = DatabaseService(database_path)
+        database_service._connection.initialize()
+
+        detail = (
+            f"Database initialized | "
+            f"path={database_path}"
+        )
+
+        logger.info(detail)
+
+        return database_service, detail
 
     def _init_memory(
         self,
