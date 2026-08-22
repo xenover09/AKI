@@ -8,7 +8,7 @@ and window geometry persistence (position and size memory).
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from PySide6.QtCore import QPoint, QRect, QSettings, QSize, Qt
 from PySide6.QtGui import QCursor, QMouseEvent, QResizeEvent
@@ -17,9 +17,10 @@ from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 from desktop.themes.blue_theme import BlueTheme
 from desktop.web_view import AKIWebView
 from desktop.window_effects import WindowEffects
+from logs.logger import get_logger
 from services.telemetry_service import TelemetryService
 
-logger: logging.Logger = logging.getLogger(__name__)
+logger: logging.Logger = get_logger("desktop.main_window")
 
 _DEFAULT_WIDTH: int = 1280
 _DEFAULT_HEIGHT: int = 800
@@ -34,18 +35,30 @@ class MainWindow(QMainWindow):
     def __init__(
         self,
         telemetry_service: Optional[TelemetryService] = None,
+        ai_service: Optional[Any] = None,
+        conversation_service: Optional[Any] = None,
+        memory_search_service: Optional[Any] = None,
+        memory_service: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         """Initialize the main window shell.
 
         Args:
             telemetry_service: Optional telemetry service instance.
+            ai_service: Optional intelligence facade for real AI replies.
+            conversation_service: Optional chat history persistence.
+            memory_search_service: Optional ranked memory provider.
+            memory_service: Optional persistent memory writer for auto-facts.
             parent: Optional parent widget.
         """
         super().__init__(parent)
         self._telemetry_service = (
             telemetry_service if telemetry_service is not None else TelemetryService()
         )
+        self._ai_service = ai_service
+        self._conversation_service = conversation_service
+        self._memory_search_service = memory_search_service
+        self._memory_service = memory_service
         self._settings = QSettings("AKI", "DesktopOS")
         self._drag_position: QPoint = QPoint()
         self._is_dragging: bool = False
@@ -87,7 +100,12 @@ class MainWindow(QMainWindow):
 
         # Create WebEngine View
         self._web_view = AKIWebView(
-            telemetry_service=self._telemetry_service, parent=self
+            telemetry_service=self._telemetry_service,
+            ai_service=self._ai_service,
+            conversation_service=self._conversation_service,
+            memory_search_service=self._memory_search_service,
+            memory_service=self._memory_service,
+            parent=self,
         )
         self._web_view.bridge().set_window_reference(self)
         self._web_view.installEventFilter(self)

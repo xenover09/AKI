@@ -9,6 +9,10 @@
     let bridge = null;
     let isVoiceListening = false;
     let currentAttachedFile = "";
+    let lastHoveredElement = null;
+    let orbSpeakTimer = null;
+    let activeTypingBubble = null;
+    let activeRequestId = "";
 
     // DOM Elements Cache
     const elements = {
@@ -34,7 +38,6 @@
         btnClose: document.getElementById("btnClose"),
         btnSoundToggle: document.getElementById("btnSoundToggle"),
 
-        chatMessages: document.getElementById("chatMessages"),
         chatInput: document.getElementById("chatInput"),
         btnChatSubmit: document.getElementById("btnChatSubmit")
     };
@@ -83,8 +86,6 @@
 
     // 3. Multi-View Stack Navigation Manager
     function switchView(targetViewId) {
-        if (window.AKISound) window.AKISound.playClick();
-
         const allViews = document.querySelectorAll(".os-view-panel");
         const allNavBtns = document.querySelectorAll(".os-nav-icon");
 
@@ -107,8 +108,6 @@
 
     // 4. File Attachment Handler
     function handleSelectAttachment() {
-        if (window.AKISound) window.AKISound.playClick();
-
         if (bridge && typeof bridge.selectAttachment === "function") {
             bridge.selectAttachment().then(result => {
                 if (result && result.selected) {
@@ -132,8 +131,40 @@
         if (elements.attachmentPill) elements.attachmentPill.classList.remove("active");
     }
 
-    // 5. Execute Command & Append Chat Response
-    function executeCommand(customText) {
+    // 5. Orb Intelligence State Machine
+    // Drives the reactor visual states: idle -> thinking -> speaking -> idle.
+    function setOrbState(state) {
+        const core = document.querySelector(".aki-core-container");
+        if (!core) return;
+
+        core.classList.remove("state-thinking", "state-speaking");
+        if (state === "thinking" || state === "speaking") {
+            core.classList.add("state-" + state);
+        }
+
+        const waveform = document.querySelector(".aki-waveform");
+        if (waveform) {
+            waveform.classList.toggle("waveform-speaking", state === "speaking");
+        }
+    }
+
+    function estimateSpeakDurationMs(text) {
+        // Roughly 2.5 words per second, clamped to a natural range.
+        const words = String(text).trim().split(/\s+/).length;
+        return Math.max(1400, Math.min(900 + words * 260, 8000));
+    }
+
+    function speakResponse(text) {
+        setOrbState("speaking");
+        if (window.AKISound) window.AKISound.playVoice();
+
+        if (orbSpeakTimer) clearTimeout(orbSpeakTimer);
+        orbSpeakTimer = setTimeout(() => setOrbState("idle"), estimateSpeakDurationMs(text));
+    }
+
+    // 6. Execute Command & Append Chat Response
+    function executeCommand(customText, options) {
+        const fromKeyboard = !!(options && options.fromKeyboard);
         let query = customText || (elements.cmdInput ? elements.cmdInput.value.trim() : "");
         if (!query && elements.chatInput) {
             query = elements.chatInput.value.trim();
@@ -141,13 +172,17 @@
 
         if (!query) return;
 
-        if (window.AKISound) window.AKISound.playClick();
+        if (fromKeyboard && window.AKISound) window.AKISound.playClick();
 
         if (elements.cmdInput) elements.cmdInput.value = "";
         if (elements.chatInput) elements.chatInput.value = "";
 
         // Append to Chat view
         appendChatMessage("user", query, currentAttachedFile);
+        setOrbState("thinking");
+        activeRequestId = "";
+        dismissTypingIndicator();
+        activeTypingBubble = showTypingIndicator();
 
         const activeAttachment = currentAttachedFile;
         clearAttachment();
@@ -155,14 +190,18 @@
         // Process response
         if (bridge && typeof bridge.sendAiPrompt === "function") {
             bridge.sendAiPrompt(query, activeAttachment).then(res => {
-                const text = res ? res.response : `AKI OS executed command: ${query}`;
-                setTimeout(() => {
-                    appendChatMessage("aki", text);
-                    if (window.AKISound) window.AKISound.playNotification();
-                }, 400);
+                if (!res) return;
+
+                if (res.status === "PENDING") {
+                    // Real AI working in background; reply arrives via aiResponseReady.
+                    if (res.request_id) activeRequestId = res.request_id;
+                    return;
+                }
+
+                handleAiPayload(res);
             });
         } else {
-            // Simulated AI Response
+            // Simulated AI Response (browser preview mode)
             setTimeout(() => {
                 const fakeResponses = [
                     `AKI OS Core initialized. Running operation: "${query}". All systems nominal.`,
@@ -170,26 +209,96 @@
                     `JARVIS Protocol engaged for "${query}". Screen and memory context synchronized.`
                 ];
                 const reply = fakeResponses[Math.floor(Math.random() * fakeResponses.length)];
-                appendChatMessage("aki", reply);
-                if (window.AKISound) window.AKISound.playNotification();
-            }, 500);
+                deliverReply(reply);
+            }, 900 + Math.floor(Math.random() * 700));
         }
     }
 
+    function handleAiPayload(payload) {
+        if (!payload || !payload.response) return;
+
+        // Drop stale replies from an older request.
+        if (
+            payload.request_id &&
+            activeRequestId &&
+            payload.request_id !== activeRequestId
+        ) {
+            return;
+        }
+
+        deliverReply(payload.response);
+    }
+
+    function deliverReply(text) {
+        dismissTypingIndicator();
+        appendChatMessage("aki", text);
+        speakResponse(text);
+    }
+
+    function getChatPanel() {
+        return document.getElementById("chatPanel");
+    }
+
+    function getChatMessages() {
+        return document.getElementById("chatMessages");
+    }
+
+    function showTypingIndicator() {
+        const feed = getChatMessages();
+        if (!feed) return null;
+
+        getChatPanel().classList.add("visible");
+
+        const bubble = document.createElement("div");
+        bubble.className = "os-chat-bubble typing";
+        bubble.innerHTML = "<span class='dot'></span><span class='dot'></span><span class='dot'></span>";
+        feed.appendChild(bubble);
+        feed.scrollTop = feed.scrollHeight;
+
+        return bubble;
+    }
+
+    function dismissTypingIndicator() {
+        if (activeTypingBubble && activeTypingBubble.parentNode) {
+            activeTypingBubble.parentNode.removeChild(activeTypingBubble);
+        }
+        activeTypingBubble = null;
+    }
+
     function appendChatMessage(sender, text, attachmentName) {
-        if (!elements.chatMessages) return;
+        const feed = getChatMessages();
+        if (!feed) return;
+
+        getChatPanel().classList.add("visible");
 
         const bubble = document.createElement("div");
         bubble.className = `os-chat-bubble ${sender}`;
-        
+
         let content = text;
         if (attachmentName) {
             content += `<br><span style="font-family: var(--os-font-mono); font-size: 11px; color: var(--os-cyan);">📎 Attached: ${attachmentName}</span>`;
         }
 
         bubble.innerHTML = content;
-        elements.chatMessages.appendChild(bubble);
-        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        feed.appendChild(bubble);
+        feed.scrollTop = feed.scrollHeight;
+    }
+
+    function clearConversation() {
+        dismissTypingIndicator();
+        activeRequestId = "";
+        setOrbState("idle");
+
+        const feed = getChatMessages();
+        if (feed) feed.innerHTML = "";
+
+        const panel = getChatPanel();
+        if (panel) panel.classList.remove("visible");
+
+        if (bridge && typeof bridge.clearConversation === "function") {
+            bridge.clearConversation();
+        }
+        if (window.AKISound) window.AKISound.playClick();
     }
 
     // 6. Voice Mode Toggle
@@ -215,11 +324,14 @@
                     bridge.telemetryUpdated.connect(renderTelemetry);
                     bridge.getSystemTelemetry().then(renderTelemetry);
 
-                    bridge.windowStateChanged.connect(state => {
-                        if (elements.btnMax) {
-                            elements.btnMax.textContent = state === "maximized" ? "❐" : "▢";
-                        }
-                    });
+                bridge.windowStateChanged.connect(state => {
+                    if (elements.btnMax) {
+                        elements.btnMax.textContent = state === "maximized" ? "❐" : "▢";
+                    }
+                });
+
+                // Real AI replies arrive here from the Python worker thread.
+                bridge.aiResponseReady.connect(handleAiPayload);
 
                     if (elements.btnMin) elements.btnMin.onclick = () => bridge.minimizeWindow();
                     if (elements.btnMax) elements.btnMax.onclick = () => bridge.maximizeWindow();
@@ -236,12 +348,52 @@
         }
     }
 
-    // 8. Attach Sound Feedback Listeners to Interactive Elements
+    // 8. Global Sound Feedback (EDITH-style)
+    // Event delegation covers every current and future interactive
+    // element instead of binding listeners per node at startup.
+    const HOVER_SOUND_SELECTOR = [
+        "button",
+        ".aki-glass-chip",
+        ".aki-nav-btn",
+        ".aki-dock-item",
+        ".aki-win-btn",
+        ".aki-glass-panel",
+        ".aki-topbar-icon",
+        ".aki-cmd-voice",
+        ".aki-events-list li"
+    ].join(", ");
+
+    function isSoundInteractive(node) {
+        return !!(node && node.closest && node.closest(HOVER_SOUND_SELECTOR));
+    }
+
     function attachSoundEffects() {
-        document.querySelectorAll(".os-dock-item, .action-btn, .os-win-btn, .glass-panel").forEach(el => {
-            el.addEventListener("mouseenter", () => {
-                if (window.AKISound) window.AKISound.playHover();
-            });
+        document.addEventListener("pointerover", (event) => {
+            const target = event.target;
+            if (!isSoundInteractive(target)) return;
+
+            const element = target.closest(HOVER_SOUND_SELECTOR);
+            if (element === lastHoveredElement) return;
+
+            lastHoveredElement = element;
+            if (window.AKISound) window.AKISound.playHover();
+        });
+
+        document.addEventListener("pointerout", (event) => {
+            if (
+                lastHoveredElement &&
+                event.relatedTarget &&
+                lastHoveredElement.contains(event.relatedTarget)
+            ) {
+                return;
+            }
+            lastHoveredElement = null;
+        });
+
+        document.addEventListener("click", (event) => {
+            if (isSoundInteractive(event.target)) {
+                if (window.AKISound) window.AKISound.playClick();
+            }
         });
     }
 
@@ -271,14 +423,17 @@
         if (elements.btnVoice) elements.btnVoice.onclick = () => toggleVoice();
         if (elements.btnAttach) elements.btnAttach.onclick = () => handleSelectAttachment();
 
+        const btnChatClear = document.getElementById("btnChatClear");
+        if (btnChatClear) btnChatClear.onclick = () => clearConversation();
+
         if (elements.cmdInput) {
             elements.cmdInput.onkeydown = (e) => {
-                if (e.key === "Enter") executeCommand();
+                if (e.key === "Enter") executeCommand(null, { fromKeyboard: true });
             };
         }
         if (elements.chatInput) {
             elements.chatInput.onkeydown = (e) => {
-                if (e.key === "Enter") executeCommand();
+                if (e.key === "Enter") executeCommand(null, { fromKeyboard: true });
             };
         }
 
@@ -308,7 +463,7 @@
         }
 
         // Quick action pills
-        document.querySelectorAll(".action-btn").forEach(pill => {
+        document.querySelectorAll(".aki-glass-chip").forEach(pill => {
             pill.onclick = () => {
                 const query = pill.textContent.trim();
                 executeCommand(query);

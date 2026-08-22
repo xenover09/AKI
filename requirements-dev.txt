@@ -1,0 +1,5 @@
+# Project AKI - Development Dependencies
+# Install alongside requirements.txt when working on AKI:
+#   pip install -r requirements-dev.txt
+
+pytest>=8.0.0

@@ -9,9 +9,11 @@ the outcome of each one:
     2. Initialize Logger
     3. Validate Runtime Environment
     4. Create Workspace Folders if Missing
-    5. Initialize Database (placeholder only)
-    6. Initialize Memory (placeholder only)
-    7. Display Boot Complete
+    5. Initialize Database
+    6. Initialize Memory
+    7. Initialize Conversation
+    8. Initialize Intelligence
+    9. Display Boot Complete
 
 No other module is permitted to reorder, skip, or duplicate this
 sequence â€” every future subsystem AKI gains is wired in here, in the
@@ -26,7 +28,13 @@ from enum import Enum
 from logging import Logger
 from pathlib import Path
 
+from ai_engine import AIService, MockProvider, OpenAICompatibleProvider
+from config.constants import (
+    AI_PROVIDER_MOCK,
+    AI_PROVIDER_OPENAI_COMPATIBLE,
+)
 from config.manager import ConfigManager
+from conversation.service import ConversationService
 from database.database_service import DatabaseService
 from memory.memory_service import MemoryService
 from config.settings import Settings
@@ -140,6 +148,8 @@ class BootResult:
     workspace: WorkspaceLayout
     database_service: DatabaseService
     memory_service: MemoryService
+    conversation_service: ConversationService
+    ai_service: AIService | None
     stages: list[BootStageResult] = field(default_factory=list)
 
 
@@ -209,9 +219,32 @@ class BootManager:
                 BootStageResult("Database", BootStageStatus.COMPLETED, database_detail)
             )
 
-            memory_service, memory_detail = self._init_memory(workspace, logger)
+            memory_service, memory_detail = self._init_memory(workspace, logger, database_service)
             stages.append(
                 BootStageResult("Memory", BootStageStatus.COMPLETED, memory_detail)
+            )
+
+            conversation_service, conversation_detail = self._init_conversation(
+                logger,
+                database_service,
+            )
+            stages.append(
+                BootStageResult(
+                    "Conversation",
+                    BootStageStatus.COMPLETED,
+                    conversation_detail,
+                )
+            )
+
+            ai_service, intelligence_detail, intelligence_status = (
+                self._init_intelligence(settings, logger)
+            )
+            stages.append(
+                BootStageResult(
+                    "Intelligence",
+                    intelligence_status,
+                    intelligence_detail,
+                )
             )
         except BootError:
             raise
@@ -226,6 +259,8 @@ class BootManager:
             workspace=workspace,
             database_service=database_service,
             memory_service=memory_service,
+            conversation_service=conversation_service,
+            ai_service=ai_service,
             stages=stages,
         )
         self._display_boot_complete(result)
@@ -322,7 +357,7 @@ class BootManager:
         database_path = workspace.database_dir / "aki.db"
 
         database_service = DatabaseService(database_path)
-        database_service._connection.initialize()
+        database_service.initialize()
 
         detail = (
             f"Database initialized | "
@@ -337,12 +372,13 @@ class BootManager:
         self,
         workspace: WorkspaceLayout,
         logger: Logger,
+        database_service: DatabaseService,
     ) -> tuple[MemoryService, str]:
         """
         Stage 6 - Initialize AKI's memory subsystem.
         """
 
-        memory_service = MemoryService()
+        memory_service = MemoryService(database_service)
 
         detail = (
             f"Memory subsystem initialized | "
@@ -352,6 +388,89 @@ class BootManager:
         logger.info(detail)
 
         return memory_service, detail
+
+    def _init_conversation(
+        self,
+        logger: Logger,
+        database_service: DatabaseService,
+    ) -> tuple[ConversationService, str]:
+        """
+        Stage 7 - Initialize AKI's conversation subsystem.
+        """
+
+        conversation_service = ConversationService(database_service)
+
+        detail = "Conversation subsystem initialized"
+
+        logger.info(detail)
+
+        return conversation_service, detail
+
+    def _init_intelligence(
+        self,
+        settings: Settings,
+        logger: Logger,
+    ) -> tuple[AIService | None, str, BootStageStatus]:
+        """
+        Stage 8 - Initialize AKI's intelligence subsystem.
+
+        Intelligence is optional at boot: without a usable provider
+        the stage reports PLACEHOLDER and `ai_service` stays None so
+        the rest of AKI keeps working offline.
+
+        Returns:
+            A tuple of (service or None, log detail, stage status).
+        """
+
+        if settings.ai_provider == AI_PROVIDER_MOCK:
+            ai_service = AIService(MockProvider())
+            detail = (
+                "Intelligence initialized | "
+                f"provider={AI_PROVIDER_MOCK}"
+            )
+
+            logger.info(detail)
+            return ai_service, detail, BootStageStatus.COMPLETED
+
+        if settings.ai_provider == AI_PROVIDER_OPENAI_COMPATIBLE:
+            if not settings.ai_api_key:
+                detail = (
+                    "Intelligence not configured | "
+                    f"provider={AI_PROVIDER_OPENAI_COMPATIBLE} | "
+                    "set AKI_AI_API_KEY to enable"
+                )
+                logger.warning(detail)
+                return None, detail, BootStageStatus.PLACEHOLDER
+
+            provider = OpenAICompatibleProvider(
+                base_url=settings.ai_base_url,
+                api_key=settings.ai_api_key,
+                model=settings.ai_model,
+                timeout_seconds=settings.ai_timeout_seconds,
+            )
+            ai_service = AIService(provider)
+
+            detail = (
+                "Intelligence initialized | "
+                f"provider={AI_PROVIDER_OPENAI_COMPATIBLE} | "
+                f"model={settings.ai_model}"
+            )
+
+            logger.info(detail)
+            return ai_service, detail, BootStageStatus.COMPLETED
+
+        detail = (
+            f"Unknown AI provider '{settings.ai_provider}' | "
+            f"falling back to {AI_PROVIDER_MOCK}"
+        )
+        logger.warning(detail)
+
+        ai_service = AIService(MockProvider())
+        return (
+            ai_service,
+            f"{detail} | fallback active",
+            BootStageStatus.COMPLETED,
+        )
 
     def _display_boot_complete(self, result: BootResult) -> None:
         """

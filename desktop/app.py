@@ -8,6 +8,7 @@ main frameless application window.
 from __future__ import annotations
 
 import sys
+from typing import Any, Optional
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
@@ -20,13 +21,20 @@ from desktop.themes.blue_theme import BlueTheme
 class AKIApplication:
     """Owns the QApplication lifecycle and application bootstrap sequence."""
 
-    def __init__(self, argv: list[str]) -> None:
+    def __init__(
+        self,
+        argv: list[str],
+        runtime: Optional[Any] = None,
+    ) -> None:
         """Initialize the AKI application.
 
         Args:
             argv: Command line arguments forwarded to QApplication.
+            runtime: Optional ApplicationResult carrying the initialized
+                core services (database, memory, conversation, AI).
         """
         self._app: QApplication = QApplication(argv)
+        self._runtime = runtime
         self._theme: BlueTheme = BlueTheme()
         self._splash: SplashScreen | None = None
         self._main_window: MainWindow | None = None
@@ -54,12 +62,34 @@ class AKIApplication:
 
     def _launch_main_window(self) -> None:
         """Close the splash screen and reveal the main window."""
-        self._main_window = MainWindow()
+        self._main_window = self._build_main_window()
         self._main_window.show()
 
         if self._splash is not None:
             self._splash.close()
             self._splash = None
+
+    def _build_main_window(self) -> MainWindow:
+        """Construct the main window wired to core runtime services."""
+        ai_service = getattr(self._runtime, "ai_service", None)
+        conversation_service = getattr(self._runtime, "conversation_service", None)
+        database_service = getattr(self._runtime, "database_service", None)
+
+        memory_service = None
+        memory_search_service = None
+        if database_service is not None:
+            from memory.memory_search import MemorySearchService
+            from memory.memory_service import MemoryService
+
+            memory_service = MemoryService(database_service)
+            memory_search_service = MemorySearchService(database_service)
+
+        return MainWindow(
+            ai_service=ai_service,
+            conversation_service=conversation_service,
+            memory_search_service=memory_search_service,
+            memory_service=memory_service,
+        )
 
 
 def main() -> int:

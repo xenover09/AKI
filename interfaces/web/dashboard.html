@@ -115,6 +115,13 @@
                 <!-- Bottom Area: Search Bar & Icons -->
                 <div class="aki-layout-bottom aki-fade-in">
                     <div class="aki-command-wrapper">
+                        <div class="os-chat-panel" id="chatPanel">
+                            <div class="os-chat-header">
+                                <span class="os-chat-title">AKI · LIVE CONVERSATION</span>
+                                <button class="os-chat-clear" id="btnChatClear" title="Clear conversation">✕</button>
+                            </div>
+                            <div class="os-chat-scroll" id="chatMessages"></div>
+                        </div>
                         <div class="aki-command-bar">
                             <span class="aki-cmd-icon">🔍</span>
                             <input type="text" class="aki-cmd-input" id="cmdInput" placeholder="Ask AKI or type a system command..." autocomplete="off">
@@ -139,6 +146,7 @@
 
     <!-- Scripts -->
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script src="js/os_particles.js"></script>
     <script src="js/os_desktop.js"></script>
 </body>
 </html>

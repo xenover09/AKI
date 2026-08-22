@@ -1,189 +1,173 @@
 """
-Application orchestration for AKI.
+AKI Application.
 
-Application is the composition root for the core AKI runtime.
-
-Responsibilities:
-- Own the BootManager.
-- Own the core command-system components.
-- Initialize the application runtime.
-- Expose the command router to higher-level presentation layers.
-- Report boot status.
-
-Important:
-Application does NOT execute operating-system actions directly.
-Actual execution remains behind the controlled CommandExecutor.
+Coordinates AKI's core runtime services.
 """
 
 from __future__ import annotations
 
-import sys
+from dataclasses import dataclass
 from pathlib import Path
 
-from aki_core.action_registry import ActionRegistry
-from aki_core.boot import BootError, BootManager, BootResult
-from aki_core.command_executor import CommandExecutor
-from aki_core.command_router import CommandRouter
-from aki_core.confirmation_manager import ConfirmationManager
-from aki_core.permission_manager import PermissionManager
+from ai_engine import AIService
+from aki_core.boot import BootResult
+from conversation.service import ConversationService
+from database.database_service import DatabaseService
+from memory.memory_service import MemoryService
+
+
+@dataclass(frozen=True)
+class ApplicationResult:
+    """
+    Runtime services initialized by AKI.
+    """
+
+    boot: BootResult
+    database_service: DatabaseService
+    memory_service: MemoryService
+    conversation_service: ConversationService
+    ai_service: AIService | None
 
 
 class Application:
     """
-    Top-level orchestrator for AKI.
+    Main application coordinator for AKI.
 
-    Application acts as the composition root.
-
-    It creates and connects AKI's core components but does not
-    contain business logic or operating-system execution logic.
+    The Application owns high-level services but does not
+    contain their internal business logic.
     """
 
-    def __init__(self, project_root: Path) -> None:
-        """
-        Initialize the AKI application.
-
-        Args:
-            project_root:
-                Absolute path to the AKI source root.
-        """
-
-        self._project_root = project_root
-
-        # ---------------------------------------------------------
-        # Boot
-        # ---------------------------------------------------------
-
-        self._boot_manager = BootManager(
-            project_root=project_root
-        )
-
-        self._boot_result: BootResult | None = None
-
-        # ---------------------------------------------------------
-        # Command System
-        # ---------------------------------------------------------
-
-        self._action_registry = ActionRegistry()
-
-        self._permission_manager = PermissionManager(
-            registry=self._action_registry
-        )
-
-        self._confirmation_manager = ConfirmationManager()
-
-        self._command_router = CommandRouter()
-
-        self._command_executor = CommandExecutor(
-            registry=self._action_registry,
-            permission_manager=self._permission_manager,
-            confirmation_manager=self._confirmation_manager,
-        )
-
-    # =============================================================
-    # Boot
-    # =============================================================
-
-    def initialize(self) -> BootResult:
-        """
-        Run AKI's complete boot sequence.
-
-        Returns:
-            BootResult produced by BootManager.
-
-        Raises:
-            BootError:
-                If a critical boot stage fails.
-        """
-
-        self._boot_result = self._boot_manager.boot()
-
-        return self._boot_result
-
-    # =============================================================
-    # Command System Access
-    # =============================================================
-
-    @property
-    def command_router(self) -> CommandRouter:
-        """
-        Return AKI's command router.
-
-        Higher-level interfaces such as the desktop UI or
-        future voice interface can submit commands through it.
-        """
-
-        return self._command_router
-
-    @property
-    def action_registry(self) -> ActionRegistry:
-        """Return AKI's action registry."""
-
-        return self._action_registry
-
-    @property
-    def permission_manager(self) -> PermissionManager:
-        """Return AKI's permission manager."""
-
-        return self._permission_manager
-
-    @property
-    def confirmation_manager(self) -> ConfirmationManager:
-        """Return AKI's confirmation manager."""
-
-        return self._confirmation_manager
-
-    @property
-    def command_executor(self) -> CommandExecutor:
-        """
-        Return the controlled command executor.
-
-        No actions are executed merely by accessing this property.
-        """
-
-        return self._command_executor
-
-    @property
-    def boot_result(self) -> BootResult | None:
-        """Return the latest boot result."""
-
-        return self._boot_result
-
-    # =============================================================
-    # Application Runtime
-    # =============================================================
-
-    def run(self) -> int:
-        """
-        Run the application.
-
-        Currently this ensures that the boot sequence completes.
-
-        The desktop presentation layer will later take control
-        after successful initialization.
-
-        Returns:
-            0:
-                Successful startup.
-
-            1:
-                Boot failure.
-        """
-
-        try:
-            if self._boot_result is None:
-                self.initialize()
-
-        except BootError as error:
-            print(
-                f"AKI failed to start: {error}",
-                file=sys.stderr,
+    def __init__(
+        self,
+        project_root: Path,
+    ) -> None:
+        if not isinstance(
+            project_root,
+            Path,
+        ):
+            raise TypeError(
+                "project_root must be a pathlib.Path."
             )
 
-            return 1
+        self._project_root = project_root
+        self._database_service: DatabaseService | None = None
+        self._memory_service: MemoryService | None = None
+        self._conversation_service: ConversationService | None = None
+        self._ai_service: AIService | None = None
 
-        return 0
+    @property
+    def project_root(self) -> Path:
+        """Return the AKI project root."""
+
+        return self._project_root
+
+    @property
+    def database_service(self) -> DatabaseService:
+        """
+        Return the initialized database service.
+        """
+
+        if self._database_service is None:
+            raise RuntimeError(
+                "Application has not been initialized."
+            )
+
+        return self._database_service
+
+    @property
+    def memory_service(self) -> MemoryService:
+        """
+        Return the initialized memory service.
+        """
+
+        if self._memory_service is None:
+            raise RuntimeError(
+                "Application has not been initialized."
+            )
+
+        return self._memory_service
+
+    @property
+    def conversation_service(self) -> ConversationService:
+        """
+        Return the initialized conversation service.
+        """
+
+        if self._conversation_service is None:
+            raise RuntimeError(
+                "Application has not been initialized."
+            )
+
+        return self._conversation_service
+
+    @property
+    def ai_service(self) -> AIService | None:
+        """
+        Return the initialized AI service, or None when the
+        intelligence layer has no usable provider.
+        """
+
+        return self._ai_service
+
+    def initialize(self) -> ApplicationResult:
+        """
+        Initialize AKI's runtime services.
+
+        Service construction and initialization order are owned by
+        the Boot Manager. This method runs the boot sequence and
+        adopts the services it produced, so exactly one instance of
+        each service exists per process.
+        """
+
+        boot = self._initialize_boot()
+
+        self._database_service = boot.database_service
+        self._memory_service = boot.memory_service
+        self._conversation_service = boot.conversation_service
+        self._ai_service = boot.ai_service
+
+        return ApplicationResult(
+            boot=boot,
+            database_service=self._database_service,
+            memory_service=self._memory_service,
+            conversation_service=self._conversation_service,
+            ai_service=self._ai_service,
+        )
+
+    def close(self) -> None:
+        """
+        Shut down initialized services cleanly.
+        """
+
+        if self._ai_service is not None:
+            self._ai_service.close()
+
+        if self._database_service is not None:
+            self._database_service.close()
+
+        self._conversation_service = None
+        self._memory_service = None
+        self._ai_service = None
+        self._database_service = None
+
+    def _initialize_boot(self) -> BootResult:
+        """
+        Initialize AKI's existing boot/runtime layer.
+
+        This keeps the Application compatible with the
+        existing AKI boot architecture.
+        """
+
+        from aki_core.boot import BootManager
+
+        boot_manager = BootManager(
+            self._project_root,
+        )
+
+        return boot_manager.boot()
 
 
 __all__ = [
     "Application",
+    "ApplicationResult",
 ]

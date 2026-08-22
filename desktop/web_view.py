@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from PySide6.QtCore import QTimer, QUrl, Qt
 from PySide6.QtWebChannel import QWebChannel
@@ -17,9 +17,10 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget
 
 from desktop.bridge import AKIBridge
+from logs.logger import get_logger
 from services.telemetry_service import TelemetryService
 
-logger: logging.Logger = logging.getLogger(__name__)
+logger: logging.Logger = get_logger("desktop.web_view")
 
 _TELEMETRY_INTERVAL_MS: int = 1500
 
@@ -30,19 +31,33 @@ class AKIWebView(QWebEngineView):
     def __init__(
         self,
         telemetry_service: Optional[TelemetryService] = None,
+        ai_service: Optional[Any] = None,
+        conversation_service: Optional[Any] = None,
+        memory_search_service: Optional[Any] = None,
+        memory_service: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         """Initialize the WebEngine View and set up QWebChannel.
 
         Args:
-            telemetry_service: Optional telemetry service instance.
+            telemetry_service: Optional system telemetry monitoring instance.
+            ai_service: Optional intelligence facade for real AI replies.
+            conversation_service: Optional chat history persistence.
+            memory_search_service: Optional ranked memory provider.
+            memory_service: Optional persistent memory writer for auto-facts.
             parent: Optional parent widget.
         """
         super().__init__(parent)
         self._telemetry_service = (
             telemetry_service if telemetry_service is not None else TelemetryService()
         )
-        self._bridge = AKIBridge(telemetry_service=self._telemetry_service)
+        self._bridge = AKIBridge(
+            telemetry_service=self._telemetry_service,
+            ai_service=ai_service,
+            conversation_service=conversation_service,
+            memory_search_service=memory_search_service,
+            memory_service=memory_service,
+        )
         self._channel = QWebChannel(self)
         self._telemetry_timer: Optional[QTimer] = None
 

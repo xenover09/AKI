@@ -51,10 +51,13 @@ def main() -> int:
         from desktop.app import AKIApplication
 
         application = Application(project_root)
-        application.initialize()
+        try:
+            runtime = application.initialize()
 
-        desktop = AKIApplication(sys.argv)
-        return desktop.run()
+            desktop = AKIApplication(sys.argv, runtime=runtime)
+            return desktop.run()
+        finally:
+            application.close()
 
     except ModuleNotFoundError as error:
         # Catch any unexpected module import failures cleanly

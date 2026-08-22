@@ -1,18 +1,29 @@
 """Bridge layer connecting PySide6 Python backend to Qt WebEngine JavaScript frontend.
 
 Exposes thread-safe slots and signals via QWebChannel for bidirectional
-communication, telemetry streaming, and window control.
+communication, real AI conversations, telemetry streaming, and window control.
+
+AI requests run on background threads; all database access stays on the
+main thread because the SQLite connection is single-threaded by design.
 """
 
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Any, Dict, Optional
+from uuid import uuid4
+
 from PySide6.QtCore import QObject, Signal, Slot
 
+from logs.logger import get_logger
+from memory.extraction import extract_facts
 from services.telemetry_service import TelemetryService
 
-logger: logging.Logger = logging.getLogger(__name__)
+logger: logging.Logger = get_logger("desktop.bridge")
+
+_HISTORY_MESSAGE_LIMIT: int = 10
+_MEMORY_CONTEXT_LIMIT: int = 5
 
 
 class AKIBridge(QObject):
@@ -23,23 +34,45 @@ class AKIBridge(QObject):
     aiStatusChanged = Signal(dict)
     notificationPushed = Signal(dict)
     windowStateChanged = Signal(str)
+    aiResponseReady = Signal(dict)
+
+    # Internal worker-thread -> main-thread completion channels.
+    _providerSucceeded = Signal(str, str)
+    _providerFailed = Signal(str, str)
 
     def __init__(
         self,
         telemetry_service: Optional[TelemetryService] = None,
+        ai_service: Optional[Any] = None,
+        conversation_service: Optional[Any] = None,
+        memory_search_service: Optional[Any] = None,
+        memory_service: Optional[Any] = None,
         parent: Optional[QObject] = None,
     ) -> None:
         """Initialize the AKI JavaScript-Python Bridge.
 
         Args:
             telemetry_service: Optional system telemetry monitoring instance.
+            ai_service: Optional intelligence facade used for real replies.
+            conversation_service: Optional persistence for chat history.
+            memory_search_service: Optional ranked memory provider for context.
+            memory_service: Optional persistent memory writer for auto-facts.
             parent: Optional Qt parent object.
         """
         super().__init__(parent)
         self._telemetry_service: TelemetryService = (
             telemetry_service if telemetry_service is not None else TelemetryService()
         )
+        self._ai_service = ai_service
+        self._conversation_service = conversation_service
+        self._memory_search_service = memory_search_service
+        self._memory_service = memory_service
+        self._conversation_id: Optional[str] = None
+        self._conversation_lock = threading.Lock()
         self._window_ref: Optional[Any] = None
+
+        self._providerSucceeded.connect(self._on_provider_success)
+        self._providerFailed.connect(self._on_provider_failure)
 
     def set_window_reference(self, window: Any) -> None:
         """Store reference to the main Qt window for native window operations.
@@ -114,29 +147,232 @@ class AKIBridge(QObject):
             "extension": p.suffix,
         }
 
+    @Slot(result=bool)
+    def isAiConfigured(self) -> bool:
+        """Report whether a real intelligence provider is available."""
+        return self._ai_service is not None
+
+    @Slot()
+    def clearConversation(self) -> None:
+        """Discard the active conversation; the next prompt starts fresh."""
+        with self._conversation_lock:
+            self._conversation_id = None
+        logger.info("Desktop conversation cleared.")
+
     @Slot(str, str, result=dict)
     def sendAiPrompt(self, prompt: str, attachment_name: str = "") -> Dict[str, Any]:
-        """Process prompt from JavaScript frontend and return structured AI response.
+        """Queue a user prompt for AKI's intelligence layer.
 
-        Args:
-            prompt: User command or chat message.
-            attachment_name: Optional attached filename.
+        Database work (history + persistence) happens here on the main
+        thread; only the network-bound provider call runs on a worker
+        thread. The reply is delivered later via `aiResponseReady`.
 
         Returns:
-            AI response payload.
+            PENDING payload with a request id when real AI is configured,
+            otherwise an immediate informational payload.
         """
-        logger.info("Processing AI Prompt: %s (Attachment: %s)", prompt, attachment_name)
-        response_text = f"AKI OS has processed your request: '{prompt}'."
-        if attachment_name:
-            response_text += f" Analyzed attached artifact [{attachment_name}]."
+        text = (prompt or "").strip()
 
-        return {
-            "status": "SUCCESS",
-            "prompt": prompt,
-            "response": response_text,
-            "attachment": attachment_name,
-            "timestamp": self._telemetry_service.get_system_uptime_seconds(),
-        }
+        if not text:
+            return {"status": "EMPTY", "request_id": "", "response": ""}
+
+        if attachment_name:
+            logger.info("Attachment noted but not yet analyzed: %s", attachment_name)
+
+        if self._ai_service is None:
+            return {
+                "status": "NO_PROVIDER",
+                "request_id": "",
+                "response": (
+                    "AKI ka intelligence provider abhi configure nahi hua. "
+                    ".env file mein AKI_AI_PROVIDER aur AKI_AI_API_KEY set karein."
+                ),
+            }
+
+        request_id = uuid4().hex[:12]
+        history = self._load_history()
+        memories = self._collect_memory_context(text)
+        self._persist_user_message(text)
+        self._store_auto_memories(text)
+
+        worker = threading.Thread(
+            target=self._run_provider,
+            args=(request_id, text, tuple(history), tuple(memories)),
+            daemon=True,
+            name=f"aki-ai-{request_id}",
+        )
+        worker.start()
+        return {"status": "PENDING", "request_id": request_id}
+
+    # ============================================================
+    # AI pipeline internals
+    # ============================================================
+
+    def _ensure_conversation(self) -> Optional[str]:
+        """Return the active desktop conversation id.
+
+        The most recent existing conversation is resumed so chat
+        history (and AKI's context) survive application restarts. A
+        new conversation is only created when none exists yet.
+        """
+        if self._conversation_service is None:
+            return None
+
+        with self._conversation_lock:
+            if self._conversation_id is None:
+                self._conversation_id = self._latest_conversation_id()
+
+            if self._conversation_id is None:
+                conversation = self._conversation_service.create_conversation(
+                    "AKI Desktop Session"
+                )
+                self._conversation_id = conversation.conversation_id
+
+            return self._conversation_id
+
+    def _latest_conversation_id(self) -> Optional[str]:
+        """Return the id of the most recently updated conversation."""
+
+        try:
+            conversations = self._conversation_service.list_conversations(
+                limit=1
+            )
+        except Exception:
+            logger.exception("Conversation lookup failed.")
+            return None
+
+        return conversations[0].conversation_id if conversations else None
+
+    def _load_history(self) -> list[Any]:
+        """Load recent conversation messages for context."""
+        conversation_id = self._ensure_conversation()
+        if not conversation_id:
+            return []
+
+        try:
+            return list(
+                self._conversation_service.get_history(
+                    conversation_id,
+                    limit=_HISTORY_MESSAGE_LIMIT,
+                )
+            )
+        except Exception:
+            logger.exception("Could not load conversation history.")
+            return []
+
+    def _collect_memory_context(self, query: str) -> list[str]:
+        """Return memory lines relevant to the prompt."""
+        if self._memory_search_service is None:
+            return []
+
+        try:
+            results = self._memory_search_service.search(
+                query,
+                limit=_MEMORY_CONTEXT_LIMIT,
+            )
+            return [result.memory.content for result in results]
+        except Exception:
+            logger.exception("Memory context lookup failed.")
+            return []
+
+    def _persist_user_message(self, text: str) -> None:
+        """Store the user's message in the active conversation."""
+        from conversation.models import MessageRole
+
+        conversation_id = self._ensure_conversation()
+        if not conversation_id:
+            return
+
+        try:
+            self._conversation_service.add_message(
+                conversation_id,
+                MessageRole.USER,
+                text,
+            )
+        except Exception:
+            logger.exception("User message could not be persisted.")
+
+    def _store_auto_memories(self, text: str) -> None:
+        """Persist high-confidence facts found in the user's message."""
+
+        if self._memory_service is None:
+            return
+
+        try:
+            facts = extract_facts(text)
+        except Exception:
+            logger.exception("Fact extraction failed.")
+            return
+
+        for fact in facts:
+            try:
+                self._memory_service.remember(fact.to_memory())
+                logger.info("Auto-memory stored: %s", fact.content)
+            except Exception:
+                logger.exception("Auto-memory could not be persisted.")
+
+    def _run_provider(
+        self,
+        request_id: str,
+        prompt: str,
+        history: tuple,
+        memories: tuple,
+    ) -> None:
+        """Worker-thread body: call the provider and report back via signal."""
+        try:
+            response = self._ai_service.respond(
+                prompt,
+                history=history,
+                memories=memories,
+            )
+            content = response.content.strip()
+            self._providerSucceeded.emit(request_id, content)
+        except Exception as error:  # noqa: BLE001 - surfaced to the UI
+            logger.exception("AI provider call failed.")
+            self._providerFailed.emit(request_id, str(error))
+
+    def _on_provider_success(self, request_id: str, content: str) -> None:
+        """Main-thread completion: persist and forward the assistant reply."""
+        fallback = content or "Main is waqt jawab tayyar nahi bana saka."
+        self._persist_assistant_message(fallback)
+        self.aiResponseReady.emit(
+            {
+                "status": "SUCCESS",
+                "request_id": request_id,
+                "response": fallback,
+            }
+        )
+
+    def _on_provider_failure(self, request_id: str, detail: str) -> None:
+        """Main-thread failure: inform the UI without crashing."""
+        self.aiResponseReady.emit(
+            {
+                "status": "ERROR",
+                "request_id": request_id,
+                "response": (
+                    "Intelligence subsystem mein masla prega hai. "
+                    "Meherbani kar ke dobara koshish karein."
+                ),
+                "detail": detail,
+            }
+        )
+
+    def _persist_assistant_message(self, text: str) -> None:
+        """Store AKI's reply in the active conversation."""
+        from conversation.models import MessageRole
+
+        conversation_id = self._ensure_conversation()
+        if not conversation_id:
+            return
+
+        try:
+            self._conversation_service.add_message(
+                conversation_id,
+                MessageRole.ASSISTANT,
+                text,
+            )
+        except Exception:
+            logger.exception("Assistant message could not be persisted.")
 
     @Slot()
     def startWindowMove(self) -> None:

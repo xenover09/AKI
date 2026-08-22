@@ -24,4 +24,16 @@ LOG_DATE_FORMAT: Final[str] = "%Y-%m-%d %H:%M:%S"
 LOG_FILE_MAX_BYTES: Final[int] = 5 * 1024 * 1024
 LOG_FILE_BACKUP_COUNT: Final[int] = 5
 
+# ============================================================
+# Intelligence layer defaults
+# ============================================================
+
+DEFAULT_AI_PROVIDER: Final[str] = "mock"
+DEFAULT_AI_BASE_URL: Final[str] = "https://api.groq.com/openai/v1"
+DEFAULT_AI_MODEL: Final[str] = "openai/gpt-oss-120b"
+DEFAULT_AI_TIMEOUT_SECONDS: Final[float] = 60.0
+
+AI_PROVIDER_OPENAI_COMPATIBLE: Final[str] = "openai_compatible"
+AI_PROVIDER_MOCK: Final[str] = "mock"
+
 ENV_FILE_NAME: Final[str] = ".env"
