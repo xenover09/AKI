@@ -13,7 +13,8 @@ the outcome of each one:
     6. Initialize Memory
     7. Initialize Conversation
     8. Initialize Intelligence
-    9. Display Boot Complete
+    9. Initialize Action System
+    10. Display Boot Complete
 
 No other module is permitted to reorder, skip, or duplicate this
 sequence â€” every future subsystem AKI gains is wired in here, in the
@@ -28,6 +29,7 @@ from enum import Enum
 from logging import Logger
 from pathlib import Path
 
+from .system_actions import ActionSystem, build_action_system
 from ai_engine import AIService, MockProvider, OpenAICompatibleProvider
 from config.constants import (
     AI_PROVIDER_MOCK,
@@ -150,6 +152,7 @@ class BootResult:
     memory_service: MemoryService
     conversation_service: ConversationService
     ai_service: AIService | None
+    action_system: ActionSystem | None = None
     stages: list[BootStageResult] = field(default_factory=list)
 
 
@@ -246,6 +249,15 @@ class BootManager:
                     intelligence_detail,
                 )
             )
+
+            action_system = build_action_system()
+            stages.append(
+                BootStageResult(
+                    "Action System",
+                    BootStageStatus.COMPLETED,
+                    f"{len(action_system.registry.list_actions())} actions registered",
+                )
+            )
         except BootError:
             raise
         except Exception as error:
@@ -261,6 +273,7 @@ class BootManager:
             memory_service=memory_service,
             conversation_service=conversation_service,
             ai_service=ai_service,
+            action_system=action_system,
             stages=stages,
         )
         self._display_boot_complete(result)

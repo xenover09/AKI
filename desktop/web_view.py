@@ -35,6 +35,7 @@ class AKIWebView(QWebEngineView):
         conversation_service: Optional[Any] = None,
         memory_search_service: Optional[Any] = None,
         memory_service: Optional[Any] = None,
+        action_system: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         """Initialize the WebEngine View and set up QWebChannel.
@@ -45,6 +46,7 @@ class AKIWebView(QWebEngineView):
             conversation_service: Optional chat history persistence.
             memory_search_service: Optional ranked memory provider.
             memory_service: Optional persistent memory writer for auto-facts.
+            action_system: Optional permission-checked action stack.
             parent: Optional parent widget.
         """
         super().__init__(parent)
@@ -57,6 +59,7 @@ class AKIWebView(QWebEngineView):
             conversation_service=conversation_service,
             memory_search_service=memory_search_service,
             memory_service=memory_service,
+            action_system=action_system,
         )
         self._channel = QWebChannel(self)
         self._telemetry_timer: Optional[QTimer] = None

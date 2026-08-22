@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         conversation_service: Optional[Any] = None,
         memory_search_service: Optional[Any] = None,
         memory_service: Optional[Any] = None,
+        action_system: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         """Initialize the main window shell.
@@ -49,6 +50,7 @@ class MainWindow(QMainWindow):
             conversation_service: Optional chat history persistence.
             memory_search_service: Optional ranked memory provider.
             memory_service: Optional persistent memory writer for auto-facts.
+            action_system: Optional permission-checked action stack.
             parent: Optional parent widget.
         """
         super().__init__(parent)
@@ -59,6 +61,7 @@ class MainWindow(QMainWindow):
         self._conversation_service = conversation_service
         self._memory_search_service = memory_search_service
         self._memory_service = memory_service
+        self._action_system = action_system
         self._settings = QSettings("AKI", "DesktopOS")
         self._drag_position: QPoint = QPoint()
         self._is_dragging: bool = False
@@ -105,6 +108,7 @@ class MainWindow(QMainWindow):
             conversation_service=self._conversation_service,
             memory_search_service=self._memory_search_service,
             memory_service=self._memory_service,
+            action_system=self._action_system,
             parent=self,
         )
         self._web_view.bridge().set_window_reference(self)

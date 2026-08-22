@@ -74,6 +74,7 @@ class AKIApplication:
         ai_service = getattr(self._runtime, "ai_service", None)
         conversation_service = getattr(self._runtime, "conversation_service", None)
         database_service = getattr(self._runtime, "database_service", None)
+        action_system = getattr(self._runtime, "action_system", None)
 
         memory_service = None
         memory_search_service = None
@@ -89,6 +90,7 @@ class AKIApplication:
             conversation_service=conversation_service,
             memory_search_service=memory_search_service,
             memory_service=memory_service,
+            action_system=action_system,
         )
 
 

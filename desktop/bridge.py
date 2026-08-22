@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from PySide6.QtCore import QObject, Signal, Slot
 
+from aki_core.intent_engine import IntentEngine
 from logs.logger import get_logger
 from memory.extraction import extract_facts
 from services.telemetry_service import TelemetryService
@@ -47,6 +48,7 @@ class AKIBridge(QObject):
         conversation_service: Optional[Any] = None,
         memory_search_service: Optional[Any] = None,
         memory_service: Optional[Any] = None,
+        action_system: Optional[Any] = None,
         parent: Optional[QObject] = None,
     ) -> None:
         """Initialize the AKI JavaScript-Python Bridge.
@@ -57,6 +59,8 @@ class AKIBridge(QObject):
             conversation_service: Optional persistence for chat history.
             memory_search_service: Optional ranked memory provider for context.
             memory_service: Optional persistent memory writer for auto-facts.
+            action_system: Optional permission-checked action stack for
+                system commands (open apps, websites, screenshots).
             parent: Optional Qt parent object.
         """
         super().__init__(parent)
@@ -67,12 +71,32 @@ class AKIBridge(QObject):
         self._conversation_service = conversation_service
         self._memory_search_service = memory_search_service
         self._memory_service = memory_service
+        self._action_system = action_system
+        self._intents = IntentEngine()
+        self._register_desktop_handlers()
         self._conversation_id: Optional[str] = None
         self._conversation_lock = threading.Lock()
         self._window_ref: Optional[Any] = None
 
         self._providerSucceeded.connect(self._on_provider_success)
         self._providerFailed.connect(self._on_provider_failure)
+
+    def _register_desktop_handlers(self) -> None:
+        """Attach desktop-layer implementations onto the action stack."""
+
+        if self._action_system is None:
+            return
+
+        from aki_core.command_executor import ExecutionStatus
+
+        executor = self._action_system.executor
+
+        # The core factory leaves screenshots unimplemented on purpose;
+        # the GUI layer owns real screen capture via Qt.
+        if not executor.has_handler("take_screenshot"):
+            from desktop.screen_capture import capture_screen
+
+            executor.register_handler("take_screenshot", capture_screen)
 
     def set_window_reference(self, window: Any) -> None:
         """Store reference to the main Qt window for native window operations.
@@ -176,6 +200,11 @@ class AKIBridge(QObject):
         if not text:
             return {"status": "EMPTY", "request_id": "", "response": ""}
 
+        # Fast path: deterministic system commands skip the AI entirely.
+        action_payload = self._try_run_intent(text)
+        if action_payload is not None:
+            return action_payload
+
         if attachment_name:
             logger.info("Attachment noted but not yet analyzed: %s", attachment_name)
 
@@ -207,6 +236,95 @@ class AKIBridge(QObject):
     # ============================================================
     # AI pipeline internals
     # ============================================================
+
+    def _try_run_intent(self, text: str) -> Optional[Dict[str, Any]]:
+        """
+        Execute a deterministic system command when the utterance
+        matches one. Returns None when the request should continue
+        to the AI conversation path.
+        """
+
+        if self._action_system is None:
+            return None
+
+        decision = self._intents.match(text)
+
+        if decision is None:
+            return None
+
+        logger.info(
+            "Intent matched: action=%s params=%s",
+            decision.action,
+            decision.parameters,
+        )
+
+        result = self._action_system.run(
+            decision.action,
+            **decision.parameters,
+        )
+
+        response = self._describe_action_result(decision, result)
+
+        payload: Dict[str, Any] = {
+            "status": "SUCCESS" if result.status.value == "success" else "ACTION_ERROR",
+            "request_id": "",
+            "response": response,
+            "action": decision.action,
+            "execution": result.status.value,
+        }
+
+        self._persist_user_message(text)
+        self._persist_assistant_message(response)
+
+        return payload
+
+    @staticmethod
+    def _describe_action_result(decision: Any, result: Any) -> str:
+        """Translate an ExecutionResult into a user-facing reply."""
+
+        from aki_core.command_executor import ExecutionStatus
+
+        data = result.data if isinstance(result.data, dict) else {}
+
+        if result.status is ExecutionStatus.SUCCESS:
+            if decision.action == "open_application":
+                return f"{decision.parameters.get('target', 'Application').title()} khol diya hai. ✅"
+            if decision.action == "open_website":
+                return (
+                    f"{decision.parameters.get('site', '').title()} "
+                    "browser mein khul gaya. ✅"
+                )
+            if decision.action == "take_screenshot":
+                return f"Screenshot save ho gaya: {data.get('path', '')}"
+            if decision.action == "get_system_info":
+                return (
+                    f"CPU {data.get('cpu_percent', '?')}% | "
+                    f"RAM {data.get('ram_percent', '?')}% "
+                    f"({data.get('ram_used_gb', '?')}/{data.get('ram_total_gb', '?')} GB) | "
+                    f"Time {data.get('local_time', '')}"
+                )
+            return result.message
+
+        if result.status in (
+            ExecutionStatus.DISABLED,
+            ExecutionStatus.NOT_IMPLEMENTED,
+        ):
+            return (
+                "Yeh feature agle phase mein aa raha hai — abhi AKI "
+                "iskay liye tayyar nahi hui. 🚧"
+            )
+
+        if result.status is ExecutionStatus.NOT_FOUND:
+            return "Yeh command mujhe abhi samajh nahi aayi."
+
+        if result.status is ExecutionStatus.DENIED:
+            return "Is kaam ki ijazat filhal available nahi hai. 🔒"
+
+        detail = ""
+        if isinstance(result.data, dict):
+            detail = str(result.data.get("error", ""))
+
+        return f"Command execute karte waqt masla aaya. {detail}".strip()
 
     def _ensure_conversation(self) -> Optional[str]:
         """Return the active desktop conversation id.

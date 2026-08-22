@@ -11,6 +11,7 @@ from pathlib import Path
 
 from ai_engine import AIService
 from aki_core.boot import BootResult
+from aki_core.system_actions import ActionSystem
 from conversation.service import ConversationService
 from database.database_service import DatabaseService
 from memory.memory_service import MemoryService
@@ -27,6 +28,7 @@ class ApplicationResult:
     memory_service: MemoryService
     conversation_service: ConversationService
     ai_service: AIService | None
+    action_system: ActionSystem | None
 
 
 class Application:
@@ -54,6 +56,7 @@ class Application:
         self._memory_service: MemoryService | None = None
         self._conversation_service: ConversationService | None = None
         self._ai_service: AIService | None = None
+        self._action_system: ActionSystem | None = None
 
     @property
     def project_root(self) -> Path:
@@ -109,6 +112,14 @@ class Application:
 
         return self._ai_service
 
+    @property
+    def action_system(self) -> ActionSystem | None:
+        """
+        Return the wired action system, or None when unavailable.
+        """
+
+        return self._action_system
+
     def initialize(self) -> ApplicationResult:
         """
         Initialize AKI's runtime services.
@@ -125,6 +136,7 @@ class Application:
         self._memory_service = boot.memory_service
         self._conversation_service = boot.conversation_service
         self._ai_service = boot.ai_service
+        self._action_system = boot.action_system
 
         return ApplicationResult(
             boot=boot,
@@ -132,6 +144,7 @@ class Application:
             memory_service=self._memory_service,
             conversation_service=self._conversation_service,
             ai_service=self._ai_service,
+            action_system=self._action_system,
         )
 
     def close(self) -> None:
