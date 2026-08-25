@@ -106,6 +106,26 @@ _EXPLICIT_ACTIONS: Final[tuple[tuple[re.Pattern, str], ...]] = (
         ),
         "start_recording",
     ),
+    (
+        re.compile(
+            r"\b(?:reminder|yaad)\s*(?:dila|dena|do|de|dilana|dilao)\b"
+            r"|\b(?:set|lagao?|laga)\s+(?:a\s+)?(?:reminder|alarm)\b"
+            r"|\balarm\s*(?:laga|lagao|do|bajao|dena)?\b"
+            r"|\bremind\s+me\b"
+            r"|\b(?:utha|bata)\s*dena\b"
+            r"|\bnotify\s*(?:karo|karna|me)?\b"
+            r"|\b\d{1,3}\s*(?:minute|minutes|min|mints?|ghantay|ghanta|ghante|hours?)\s*(?:baad|later)\b",
+            re.IGNORECASE,
+        ),
+        "create_reminder",
+    ),
+    (
+        re.compile(
+            r"\b(?:mere\s+)?(?:reminders?|yaadein|yaadain)\s*(?:batao?|dikhao|kya|list)?\b",
+            re.IGNORECASE,
+        ),
+        "list_reminders",
+    ),
 )
 
 _TARGET_FILLERS: Final[frozenset] = frozenset(

@@ -40,6 +40,9 @@ class MainWindow(QMainWindow):
         memory_search_service: Optional[Any] = None,
         memory_service: Optional[Any] = None,
         action_system: Optional[Any] = None,
+        speech_transcriber: Optional[Any] = None,
+        speech_service: Optional[Any] = None,
+        reminder_manager: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         """Initialize the main window shell.
@@ -51,6 +54,8 @@ class MainWindow(QMainWindow):
             memory_search_service: Optional ranked memory provider.
             memory_service: Optional persistent memory writer for auto-facts.
             action_system: Optional permission-checked action stack.
+            speech_transcriber: Optional speech-to-text backend for the mic.
+            speech_service: Optional text-to-speech service for spoken replies.
             parent: Optional parent widget.
         """
         super().__init__(parent)
@@ -62,6 +67,9 @@ class MainWindow(QMainWindow):
         self._memory_search_service = memory_search_service
         self._memory_service = memory_service
         self._action_system = action_system
+        self._speech_transcriber = speech_transcriber
+        self._speech_service = speech_service
+        self._reminder_manager = reminder_manager
         self._settings = QSettings("AKI", "DesktopOS")
         self._drag_position: QPoint = QPoint()
         self._is_dragging: bool = False
@@ -109,6 +117,9 @@ class MainWindow(QMainWindow):
             memory_search_service=self._memory_search_service,
             memory_service=self._memory_service,
             action_system=self._action_system,
+            speech_transcriber=self._speech_transcriber,
+            speech_service=self._speech_service,
+            reminder_manager=self._reminder_manager,
             parent=self,
         )
         self._web_view.bridge().set_window_reference(self)

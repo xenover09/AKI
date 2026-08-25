@@ -36,6 +36,9 @@ class AKIWebView(QWebEngineView):
         memory_search_service: Optional[Any] = None,
         memory_service: Optional[Any] = None,
         action_system: Optional[Any] = None,
+        speech_transcriber: Optional[Any] = None,
+        speech_service: Optional[Any] = None,
+        reminder_manager: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         """Initialize the WebEngine View and set up QWebChannel.
@@ -60,6 +63,9 @@ class AKIWebView(QWebEngineView):
             memory_search_service=memory_search_service,
             memory_service=memory_service,
             action_system=action_system,
+            speech_transcriber=speech_transcriber,
+            speech_service=speech_service,
+            reminder_manager=reminder_manager,
         )
         self._channel = QWebChannel(self)
         self._telemetry_timer: Optional[QTimer] = None
@@ -79,12 +85,34 @@ class AKIWebView(QWebEngineView):
     def _configure_web_engine(self) -> None:
         """Apply transparent background and WebEngine settings."""
         self.page().setBackgroundColor(Qt.GlobalColor.transparent)
-        
+
         settings = self.settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.ShowScrollBars, False)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.PlaybackRequiresUserGesture, False)
+
+        # Voice input: grant microphone access to our local UI origin.
+        self.page().featurePermissionRequested.connect(
+            self._grant_feature_permission
+        )
+
+    def _grant_feature_permission(self, origin, feature) -> None:
+        """Auto-grant media permissions for AKI's own local interface."""
+
+        from PySide6.QtWebEngineCore import QWebEnginePage
+
+        if feature in (
+            QWebEnginePage.Feature.MediaAudioCapture,
+            QWebEnginePage.Feature.MediaAudioVideoCapture,
+        ):
+            self.page().setFeaturePermission(
+                origin,
+                feature,
+                QWebEnginePage.PermissionPolicy.PermissionGrantedByUser,
+            )
+            logger.info("Microphone permission granted for %s", origin.toString())
 
     def _setup_web_channel(self) -> None:
         """Register the AKIBridge with QWebChannel."""

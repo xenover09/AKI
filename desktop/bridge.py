@@ -9,12 +9,13 @@ main thread because the SQLite connection is single-threaded by design.
 
 from __future__ import annotations
 
+import base64
 import logging
 import threading
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QMetaObject, QObject, Qt, Signal, Slot
 
 from aki_core.intent_engine import IntentEngine
 from logs.logger import get_logger
@@ -36,10 +37,14 @@ class AKIBridge(QObject):
     notificationPushed = Signal(dict)
     windowStateChanged = Signal(str)
     aiResponseReady = Signal(dict)
+    transcriptionReady = Signal(str, str)
 
     # Internal worker-thread -> main-thread completion channels.
     _providerSucceeded = Signal(str, str)
     _providerFailed = Signal(str, str)
+    _transcribeSucceeded = Signal(str, str)
+    _transcribeFailed = Signal(str)
+    _speechFileReady = Signal(str, str)
 
     def __init__(
         self,
@@ -49,6 +54,9 @@ class AKIBridge(QObject):
         memory_search_service: Optional[Any] = None,
         memory_service: Optional[Any] = None,
         action_system: Optional[Any] = None,
+        speech_transcriber: Optional[Any] = None,
+        speech_service: Optional[Any] = None,
+        reminder_manager: Optional[Any] = None,
         parent: Optional[QObject] = None,
     ) -> None:
         """Initialize the AKI JavaScript-Python Bridge.
@@ -61,6 +69,9 @@ class AKIBridge(QObject):
             memory_service: Optional persistent memory writer for auto-facts.
             action_system: Optional permission-checked action stack for
                 system commands (open apps, websites, screenshots).
+            speech_transcriber: Optional speech-to-text backend for voice input.
+            speech_service: Optional text-to-speech service for spoken replies.
+            reminder_manager: Optional persistence for scheduled reminders.
             parent: Optional Qt parent object.
         """
         super().__init__(parent)
@@ -72,14 +83,37 @@ class AKIBridge(QObject):
         self._memory_search_service = memory_search_service
         self._memory_service = memory_service
         self._action_system = action_system
+        self._speech_transcriber = speech_transcriber
+        self._speech = speech_service
+        self._reminder_manager = reminder_manager
+
+        from services.web_search import WebSearchService
+
+        self._web_search = WebSearchService()
         self._intents = IntentEngine()
         self._register_desktop_handlers()
         self._conversation_id: Optional[str] = None
         self._conversation_lock = threading.Lock()
         self._window_ref: Optional[Any] = None
+        self._pending_attachment_path: Optional[str] = None
+        self._voice_enabled = speech_service is not None
+        self._daily_fired: Dict[str, str] = {}
+        self._scheduler_timer = None
+        self._speech_player = None
+
+        if self._speech is not None:
+            self._speech.set_playback_handler(
+                self._queue_speech_playback,
+                self._queue_speech_stop,
+            )
+
+        self._speechFileReady.connect(self._play_speech_file)
+        self._start_reminder_scheduler()
 
         self._providerSucceeded.connect(self._on_provider_success)
         self._providerFailed.connect(self._on_provider_failure)
+        self._transcribeSucceeded.connect(self._on_transcribe_success)
+        self._transcribeFailed.connect(self._on_transcribe_failure)
 
     def _register_desktop_handlers(self) -> None:
         """Attach desktop-layer implementations onto the action stack."""
@@ -163,6 +197,8 @@ class AKIBridge(QObject):
         from pathlib import Path
 
         p = Path(file_path)
+        self._pending_attachment_path = str(p)
+
         return {
             "selected": True,
             "name": p.name,
@@ -182,6 +218,333 @@ class AKIBridge(QObject):
         with self._conversation_lock:
             self._conversation_id = None
         logger.info("Desktop conversation cleared.")
+
+    # ============================================================
+    # Voice: input (speech-to-text) and output (text-to-speech)
+    # ============================================================
+
+    @Slot(result=bool)
+    def isVoiceInputConfigured(self) -> bool:
+        """Report whether a speech-to-text backend is available."""
+        return self._speech_transcriber is not None
+
+    @Slot(bool)
+    def setVoiceOutputEnabled(self, enabled: bool) -> None:
+        """Enable or disable AKI's spoken replies."""
+
+        self._voice_enabled = bool(enabled)
+
+        if not self._voice_enabled and self._speech is not None:
+            self._speech.stop()
+
+        logger.info("Voice output %s.", "enabled" if self._voice_enabled else "disabled")
+
+    @Slot(result=bool)
+    def isVoiceOutputEnabled(self) -> bool:
+        """Return whether spoken replies are currently on."""
+        return self._voice_enabled
+
+    @Slot()
+    def stopSpeaking(self) -> None:
+        """Silence any ongoing utterance immediately."""
+        if self._speech is not None:
+            self._speech.stop()
+
+    @Slot(str, str, result=dict)
+    def transcribeAudio(
+        self,
+        audio_base64: str,
+        mime_type: str = "audio/webm",
+    ) -> Dict[str, Any]:
+        """Queue recorded microphone audio for transcription.
+
+        The network call runs on a worker thread; the transcript is
+        delivered later via `transcriptionReady`.
+        """
+
+        if self._speech_transcriber is None:
+            return {
+                "status": "NO_PROVIDER",
+                "request_id": "",
+                "transcript": "",
+            }
+
+        raw = (audio_base64 or "").strip()
+
+        if not raw:
+            return {"status": "EMPTY", "request_id": "", "transcript": ""}
+
+        try:
+            audio_bytes = base64.b64decode(raw, validate=False)
+        except Exception as error:
+            logger.warning("Voice payload could not be decoded.")
+            return {
+                "status": "DECODE_ERROR",
+                "request_id": "",
+                "response": f"Audio decode failed: {error}",
+                "transcript": "",
+            }
+
+        request_id = uuid4().hex[:12]
+        extension = (mime_type or "audio/webm").split("/")[-1].split(";")[0]
+        filename = f"speech.{extension}"
+
+        threading.Thread(
+            target=self._run_transcription,
+            args=(request_id, audio_bytes, filename),
+            daemon=True,
+            name=f"aki-stt-{request_id}",
+        ).start()
+
+        return {"status": "PENDING", "request_id": request_id}
+
+    def _run_transcription(
+        self,
+        request_id: str,
+        audio_bytes: bytes,
+        filename: str,
+    ) -> None:
+        """Worker-thread body for one speech-to-text request."""
+
+        try:
+            transcript = self._speech_transcriber.transcribe(
+                audio_bytes,
+                filename=filename,
+            )
+            self._transcribeSucceeded.emit(request_id, transcript.text)
+        except Exception as error:  # noqa: BLE001 - surfaced to the UI
+            logger.exception("Speech transcription failed.")
+            self._transcribeFailed.emit(f"{request_id}|{error}")
+
+    def _on_transcribe_success(self, request_id: str, text: str) -> None:
+        """Main-thread completion for one transcription."""
+
+        logger.info("Voice transcribed (%d chars).", len(text))
+        self.transcriptionReady.emit(request_id, text)
+
+    def _on_transcribe_failure(self, request_and_error: str) -> None:
+        """Main-thread failure path for one transcription."""
+
+        request_id, _, error = request_and_error.partition("|")
+        logger.warning("Transcription error surfaced to UI.")
+        self.transcriptionReady.emit(request_id, f"__ERROR__{error}")
+
+    def _speak_if_enabled(self, text: str) -> None:
+        """Speak one utterance when voice output is turned on."""
+
+        if self._voice_enabled and self._speech is not None and text:
+            logger.info("Speaking | voice=%s", self._speech.voice_name)
+            self._speech.speak(text)
+
+    # ============================================================
+    # Neural speech playback (GUI thread via queued signal)
+    # ============================================================
+
+    def _queue_speech_playback(self, audio_path: str, text: str) -> None:
+        """Worker-thread hook: hand the synthesized file to the GUI."""
+
+        self._speechFileReady.emit(audio_path, text)
+
+    def _queue_speech_stop(self) -> None:
+        """Worker-thread hook: stop playback on the GUI thread."""
+
+        QMetaObject.invokeMethod(
+            self,
+            "_stop_speech_player",
+            Qt.ConnectionType.QueuedConnection,
+        )
+
+    @Slot()
+    def _stop_speech_player(self) -> None:
+        """GUI thread: silence the active player immediately."""
+
+        player = getattr(self, "_speech_player", None)
+        if player is not None:
+            try:
+                player.stop()
+            except Exception:
+                pass
+            self._speech_player = None
+
+    def _play_speech_file(self, audio_path: str, text: str) -> None:
+        """GUI thread: play the neural speech file with QMediaPlayer."""
+
+        from PySide6.QtCore import QUrl
+        from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
+        from pathlib import Path as _Path
+
+        self._stop_speech_player()
+
+        audio_file = _Path(audio_path)
+        player = QMediaPlayer(self)
+        output = QAudioOutput()
+        output.setVolume(1.0)
+        player.setAudioOutput(output)
+        player.setSource(QUrl.fromLocalFile(str(audio_file)))
+
+        self._speech_player = player
+
+        def _cleanup() -> None:
+            try:
+                player.stop()
+            except Exception:
+                pass
+            audio_file.unlink(missing_ok=True)
+            if self._speech_player is player:
+                self._speech_player = None
+            if self._speech is not None:
+                self._speech.notify_playback_finished()
+
+        def _on_error(err, error_string: str) -> None:
+            logger.error(
+                "Speech playback failed (%s); using SAPI fallback.",
+                error_string,
+            )
+            audio_file.unlink(missing_ok=True)
+            if self._speech_player is player:
+                self._speech_player = None
+            if self._speech is not None and text:
+                self._speech.speak_with_sapi_direct(text)
+
+        player.mediaStatusChanged.connect(
+            lambda status: _cleanup()
+            if status == QMediaPlayer.MediaStatus.EndOfMedia
+            else None
+        )
+        player.errorOccurred.connect(_on_error)
+
+        logger.info("Playing neural speech | file=%s", audio_file.name)
+        player.play()
+
+    # ============================================================
+    # Reminders: creation, listing, and the firing loop
+    # ============================================================
+
+    def _handle_reminder_intent(self, action: str, text: str) -> Optional[str]:
+        """
+        Serve reminder intents. Returns a reply, or None to fall
+        through to the AI conversation path.
+        """
+
+        if self._reminder_manager is None:
+            return None
+
+        from automation.parser import parse_schedule, strip_schedule_text
+
+        if action == "create_reminder":
+            schedule = parse_schedule(text)
+
+            if schedule is None:
+                return (
+                    "Kab yaad dilana hai? Batao jaise: "
+                    "'10 minute baad reminder do' ya 'roz 9 baje'."
+                )
+
+            message = strip_schedule_text(text) or "Reminder"
+
+            reminder = self._reminder_manager.create(
+                message,
+                kind=schedule.kind,
+                due_at=schedule.due_at,
+                time_of_day=schedule.time_of_day,
+            )
+
+            logger.info(
+                "Reminder created | id=%s kind=%s",
+                reminder.reminder_id,
+                reminder.kind,
+            )
+
+            if schedule.kind == "once" and schedule.due_at is not None:
+                return (
+                    f"Done ✅ Main tumhein '{message}' yaad dila doonga "
+                    f"**{schedule.due_at.strftime('%H:%M')}** baje."
+                )
+
+            return (
+                f"Done ✅ Roz **{schedule.time_of_day}** baje main "
+                f"'{message}' yaad dila doonga."
+            )
+
+        if action == "list_reminders":
+            active = self._reminder_manager.list_active()
+
+            if not active:
+                return "Filhal koi reminder set nahi hai."
+
+            lines = []
+            for reminder in active[:10]:
+                when = reminder.time_of_day or (
+                    reminder.due_at or ""
+                )[:16].replace("T", " ")
+                lines.append(f"- {reminder.message} ({when})")
+
+            return "Tumhare reminders:\n" + "\n".join(lines)
+
+        return None
+
+    def _start_reminder_scheduler(self) -> None:
+        """Start the periodic due-reminder check on the GUI thread."""
+
+        try:
+            from PySide6.QtCore import QTimer
+
+            self._scheduler_timer = QTimer(self)
+            self._scheduler_timer.setInterval(20_000)
+            self._scheduler_timer.timeout.connect(self._check_due_reminders)
+            self._scheduler_timer.start()
+        except Exception as error:
+            logger.warning("Reminder scheduler unavailable: %s", error)
+
+    def _check_due_reminders(self) -> None:
+        """Fire reminders that are due and notify the UI."""
+
+        if self._reminder_manager is None:
+            return
+
+        from automation.scheduler import find_due_reminders
+        from datetime import datetime
+
+        try:
+            active = self._reminder_manager.list_active()
+        except Exception:
+            logger.exception("Reminder lookup failed.")
+            return
+
+        if not active:
+            return
+
+        now_local = datetime.now()
+
+        try:
+            due = find_due_reminders(
+                active,
+                now_local=now_local,
+                last_fired_daily=self._daily_fired,
+            )
+        except Exception:
+            logger.exception("Reminder scheduling check failed.")
+            return
+
+        for reminder in due:
+            self._reminder_manager.disable(reminder.reminder_id)
+
+            if reminder.kind == "daily":
+                self._daily_fired[reminder.reminder_id] = (
+                    now_local.strftime("%Y-%m-%d")
+                )
+
+            message = f"⏰ Reminder: {reminder.message}"
+            self.notificationPushed.emit(
+                {
+                    "title": "AKI Reminder",
+                    "body": reminder.message,
+                }
+            )
+            self._speak_if_enabled(
+                f"Reminder! {reminder.message}"
+            )
+            logger.info("Reminder fired | id=%s", reminder.reminder_id)
 
     @Slot(str, str, result=dict)
     def sendAiPrompt(self, prompt: str, attachment_name: str = "") -> Dict[str, Any]:
@@ -221,6 +584,15 @@ class AKIBridge(QObject):
         request_id = uuid4().hex[:12]
         history = self._load_history()
         memories = self._collect_memory_context(text)
+
+        # Attached file content becomes part of the prompt context.
+        if self._pending_attachment_path:
+            from desktop.attachment_reader import read_attachment
+
+            block, _truncated = read_attachment(self._pending_attachment_path)
+            text = f"{text}\n\n{block}"
+            self._pending_attachment_path = None
+
         self._persist_user_message(text)
         self._store_auto_memories(text)
 
@@ -244,12 +616,32 @@ class AKIBridge(QObject):
         to the AI conversation path.
         """
 
-        if self._action_system is None:
-            return None
-
         decision = self._intents.match(text)
 
         if decision is None:
+            return None
+
+        # Reminder intents are handled here (they need the parser,
+        # not the action executor).
+        if decision.action in ("create_reminder", "list_reminders"):
+            reply = self._handle_reminder_intent(decision.action, text)
+
+            if reply is not None:
+                self._persist_user_message(text)
+                self._persist_assistant_message(reply)
+                self._speak_if_enabled(reply)
+
+                return {
+                    "status": "SUCCESS",
+                    "request_id": "",
+                    "response": reply,
+                    "action": decision.action,
+                    "execution": "success",
+                }
+
+            return None
+
+        if self._action_system is None:
             return None
 
         logger.info(
@@ -275,6 +667,7 @@ class AKIBridge(QObject):
 
         self._persist_user_message(text)
         self._persist_assistant_message(response)
+        self._speak_if_enabled(response)
 
         return payload
 
@@ -428,7 +821,6 @@ class AKIBridge(QObject):
                 logger.info("Auto-memory stored: %s", fact.content)
             except Exception:
                 logger.exception("Auto-memory could not be persisted.")
-
     def _run_provider(
         self,
         request_id: str,
@@ -437,6 +829,7 @@ class AKIBridge(QObject):
         memories: tuple,
     ) -> None:
         """Worker-thread body: call the provider and report back via signal."""
+
         try:
             response = self._ai_service.respond(
                 prompt,
@@ -444,6 +837,28 @@ class AKIBridge(QObject):
                 memories=memories,
             )
             content = response.content.strip()
+
+            # One-shot web search tool loop: the model may request
+            # live results with a bare "SEARCH: <query>" reply.
+            if (
+                content.upper().startswith("SEARCH:")
+                and len(content) < 300
+                and self._web_search is not None
+            ):
+                query = content.split(":", 1)[1].strip()
+                logger.info("AI requested web search: %s", query[:80])
+
+                results = self._web_search.search(query)
+                context = self._web_search.render_context(results)
+
+                response = self._ai_service.respond(
+                    f"{prompt}\n\n{context}\n\n"
+                    "(Answer the user's original question using these live results.)",
+                    history=history,
+                    memories=memories,
+                )
+                content = response.content.strip()
+
             self._providerSucceeded.emit(request_id, content)
         except Exception as error:  # noqa: BLE001 - surfaced to the UI
             logger.exception("AI provider call failed.")
@@ -453,6 +868,7 @@ class AKIBridge(QObject):
         """Main-thread completion: persist and forward the assistant reply."""
         fallback = content or "Main is waqt jawab tayyar nahi bana saka."
         self._persist_assistant_message(fallback)
+        self._speak_if_enabled(fallback)
         self.aiResponseReady.emit(
             {
                 "status": "SUCCESS",

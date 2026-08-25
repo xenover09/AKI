@@ -22,7 +22,7 @@
     let height = (canvas.height = window.innerHeight);
 
     const particles = [];
-    const particleCount = Math.floor(width / 35); // Responsive count
+    const particleCount = Math.min(28, Math.floor(width / 55)); // Lean count for smoothness
 
     for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -35,10 +35,21 @@
         });
     }
 
+    let frameSkip = 0;
+    const LINK_DISTANCE = 110;
+
     function draw() {
+        // Cap the field to ~30fps — visually identical, half the GPU work.
+        frameSkip++;
+        if (frameSkip % 2 === 0) {
+            requestAnimationFrame(draw);
+            return;
+        }
+
         ctx.clearRect(0, 0, width, height);
 
-        // Draw particles and interconnecting neural links
+        // Draw particles and interconnecting neural links.
+        // No shadowBlur: it was the single most expensive operation here.
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
             p.x += p.vx;
@@ -52,22 +63,25 @@
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(0, 240, 255, ${p.alpha})`;
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = "rgba(0, 240, 255, 0.6)";
             ctx.fill();
 
-            // Connect nearby particles
+            // Connect nearby particles (upper-triangle only, no repeats).
             for (let j = i + 1; j < particles.length; j++) {
                 const p2 = particles[j];
                 const dx = p.x - p2.x;
                 const dy = p.y - p2.y;
+
+                if (Math.abs(dx) > LINK_DISTANCE || Math.abs(dy) > LINK_DISTANCE) {
+                    continue;
+                }
+
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (dist < 120) {
+                if (dist < LINK_DISTANCE) {
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
                     ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = `rgba(0, 240, 255, ${(1 - dist / 120) * 0.08})`;
+                    ctx.strokeStyle = `rgba(0, 240, 255, ${(1 - dist / LINK_DISTANCE) * 0.08})`;
                     ctx.lineWidth = 0.6;
                     ctx.stroke();
                 }

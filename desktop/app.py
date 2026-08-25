@@ -14,6 +14,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 
 from desktop.main_window import MainWindow
+from desktop.speech import SpeechService
 from desktop.splash import SplashScreen
 from desktop.themes.blue_theme import BlueTheme
 
@@ -78,12 +79,15 @@ class AKIApplication:
 
         memory_service = None
         memory_search_service = None
+        reminder_manager = None
         if database_service is not None:
+            from automation.reminder_manager import ReminderManager
             from memory.memory_search import MemorySearchService
             from memory.memory_service import MemoryService
 
             memory_service = MemoryService(database_service)
             memory_search_service = MemorySearchService(database_service)
+            reminder_manager = ReminderManager(database_service)
 
         return MainWindow(
             ai_service=ai_service,
@@ -91,6 +95,27 @@ class AKIApplication:
             memory_search_service=memory_search_service,
             memory_service=memory_service,
             action_system=action_system,
+            speech_transcriber=self._build_speech_transcriber(),
+            speech_service=SpeechService(),
+            reminder_manager=reminder_manager,
+        )
+
+    def _build_speech_transcriber(self):
+        """Create the Groq Whisper transcriber when a real key exists."""
+        boot = getattr(self._runtime, "boot", None)
+        settings = getattr(boot, "settings", None)
+
+        if settings is None or getattr(settings, "ai_provider", "") != "openai_compatible":
+            return None
+
+        if not getattr(settings, "ai_api_key", ""):
+            return None
+
+        from ai_engine.speech import SpeechTranscriber
+
+        return SpeechTranscriber(
+            base_url=settings.ai_base_url,
+            api_key=settings.ai_api_key,
         )
 
 

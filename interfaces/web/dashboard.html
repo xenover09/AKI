@@ -66,9 +66,18 @@
                             <button class="aki-glass-chip aki-glass-interactive">System Cleanup</button>
                         </div>
                     </div>
+
+                    <div class="aki-glass-panel aki-events-panel">
+                        <div class="aki-panel-header">UPCOMING EVENTS <span class="aki-topbar-icon">✕</span></div>
+                        <ul class="aki-events-list">
+                            <li><span class="icon">📅</span> Project Meeting <span class="time">10:00 AM</span></li>
+                            <li><span class="icon">📝</span> Code Review <span class="time">02:30 PM</span></li>
+                            <li><span class="icon">🏃</span> Workout <span class="time">06:00 PM</span></li>
+                        </ul>
+                    </div>
                 </div>
 
-                <!-- Center Area: Glowing Orb -->
+                <!-- Center Area: Glowing Orb + Dock -->
                 <div class="aki-layout-center aki-fade-in">
                     <div class="aki-core-container">
                         <div class="aki-core-ring-outer"></div>
@@ -76,9 +85,19 @@
                         <div class="aki-core-ring-third"></div>
                         <div class="aki-core-orb">AKI</div>
                     </div>
+
+                    <div class="aki-dock">
+                        <div class="aki-dock-item brand">AKI</div>
+                        <div class="aki-dock-item">📁</div>
+                        <div class="aki-dock-item">🌍</div>
+                        <div class="aki-dock-item">🌊</div>
+                        <div class="aki-dock-item">⌨</div>
+                        <div class="aki-dock-item">🎵</div>
+                        <div class="aki-dock-item">+</div>
+                    </div>
                 </div>
 
-                <!-- Right Area: Status & Events -->
+                <!-- Right Area: Status, Live Chat, Command Bar -->
                 <div class="aki-layout-right aki-fade-in">
                     <div class="aki-glass-panel">
                         <div class="aki-panel-header">SYSTEM STATUS <span class="aki-topbar-icon">✕</span></div>
@@ -102,44 +121,22 @@
                         </div>
                     </div>
 
-                    <div class="aki-glass-panel">
-                        <div class="aki-panel-header">UPCOMING EVENTS <span class="aki-topbar-icon">✕</span></div>
-                        <ul class="aki-events-list">
-                            <li><span class="icon">📅</span> Project Meeting <span class="time">10:00 AM</span></li>
-                            <li><span class="icon">📝</span> Code Review <span class="time">02:30 PM</span></li>
-                            <li><span class="icon">🏃</span> Workout <span class="time">06:00 PM</span></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Bottom Area: Search Bar & Icons -->
-                <div class="aki-layout-bottom aki-fade-in">
-                    <div class="aki-command-wrapper">
-                        <div class="os-chat-panel" id="chatPanel">
-                            <div class="os-chat-header">
-                                <span class="os-chat-title">AKI · LIVE CONVERSATION</span>
-                                <button class="os-chat-clear" id="btnChatClear" title="Clear conversation">✕</button>
-                            </div>
-                            <div class="os-chat-scroll" id="chatMessages"></div>
+                    <div class="os-chat-panel" id="chatPanel">
+                        <div class="os-chat-header">
+                            <span class="os-chat-title">AKI · LIVE CONVERSATION</span>
+                            <button class="os-chat-clear" id="btnChatClear" title="Clear conversation">✕</button>
                         </div>
+                        <div class="os-chat-scroll" id="chatMessages"></div>
+                    </div>
+
+                    <div class="aki-command-wrapper">
                         <div class="aki-command-bar">
                             <span class="aki-cmd-icon">🔍</span>
                             <input type="text" class="aki-cmd-input" id="cmdInput" placeholder="Ask AKI or type a system command..." autocomplete="off">
                             <button id="btnVoice" class="aki-cmd-voice">🎙</button>
                         </div>
                     </div>
-                    
-                    <div class="aki-dock">
-                        <div class="aki-dock-item brand">AKI</div>
-                        <div class="aki-dock-item">📁</div>
-                        <div class="aki-dock-item">🌍</div>
-                        <div class="aki-dock-item">🌊</div>
-                        <div class="aki-dock-item">⌨</div>
-                        <div class="aki-dock-item">🎵</div>
-                        <div class="aki-dock-item">+</div>
-                    </div>
                 </div>
-
             </main>
         </div>
     </div>
