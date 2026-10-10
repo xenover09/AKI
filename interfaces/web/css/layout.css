@@ -83,8 +83,10 @@
     
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
     align-items: center;
     padding: var(--aki-space-6) 0;
+    padding-bottom: var(--aki-space-8);
     gap: var(--aki-space-6);
 }
 

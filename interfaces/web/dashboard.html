@@ -34,12 +34,7 @@
             <!-- Left Dock -->
             <nav class="aki-layout-sidebar">
                 <button class="aki-nav-btn active" data-nav="home">⌂</button>
-                <button class="aki-nav-btn" data-nav="apps">⊞</button>
-                <button class="aki-nav-btn" data-nav="files">🗀</button>
-                <button class="aki-nav-btn" data-nav="code" id="btnDevNav" title="Dev Agent">&lt;/&gt;</button>
-                <button class="aki-nav-btn" data-nav="security" id="btnCyberNav" title="Cyber Suite">⛨</button>
                 <button class="aki-nav-btn" data-nav="settings" id="btnSettingsNav">⚙</button>
-                <button class="aki-nav-btn" data-nav="library" id="btnLibraryNav" title="Knowledge Library">▤</button>
             </nav>
 
             <!-- Inner Grid (Dashboard Content) -->
@@ -119,83 +114,7 @@
         </div>
     </div>
 
-    <!-- Knowledge Library Window (This-PC style) -->
-    <div class="os-library-window" id="libraryWindow">
-        <div class="os-lib-titlebar">
-            <span class="os-lib-title">📚 AKI KNOWLEDGE LIBRARY</span>
-            <div class="os-lib-controls">
-                <button id="btnLibMin" title="Minimize">—</button>
-                <button id="btnLibMax" title="Maximize">▢</button>
-                <button id="btnLibClose" class="close" title="Close">✕</button>
-            </div>
-        </div>
-        <div class="os-lib-body">
-            <div class="os-lib-toolbar">
-                <button class="os-lib-refresh" id="btnRefreshBooks">⟳ REFRESH</button>
-            </div>
-            <div class="os-lib-grid" id="bookGrid"></div>
-            <div class="os-lib-empty" id="libEmpty">📚 Library khali hai — ＋ tile se pehli book add karein</div>
-        </div>
-    </div>
 
-    <!-- Dev Agent Window -->
-    <div class="os-library-window" id="devWindow">
-        <div class="os-lib-titlebar">
-            <span class="os-lib-title">&lt;/&gt; AKI DEV AGENT</span>
-            <div class="os-lib-controls">
-                <button id="btnDevMin">—</button>
-                <button id="btnDevMax">▢</button>
-                <button id="btnDevClose" class="close">✕</button>
-            </div>
-        </div>
-        <div class="os-lib-body">
-            <div class="os-dev-instruction">
-                <textarea class="os-textarea" id="devDesc" rows="3" placeholder="AKI se kya banana hai? Example: meri portfolio website banao dark glass theme ke sath..."></textarea>
-                <button class="os-dev-create" id="btnDevCreate">⚡ BUILD</button>
-            </div>
-
-            <div class="os-lib-toolbar">
-                <span class="os-lib-title">PROJECTS — click: AKI/PC dono options</span>
-                <button class="os-lib-refresh" id="btnDevRefresh">⟳</button>
-            </div>
-            <div class="os-lib-grid" id="devProjectGrid"></div>
-            <div class="os-lib-empty hidden" id="devEmpty">Pehla project banane ke liye upar instruction likhein</div>
-        </div>
-
-        <!-- AKI-internal file viewer -->
-        <div class="os-dev-viewer" id="devViewer">
-            <div class="os-dev-viewer-head">
-                <span id="devViewerTitle">files</span>
-                <button class="os-chat-clear" id="btnDevViewerClose">✕</button>
-            </div>
-            <div class="os-dev-viewer-body">
-                <div class="os-dev-filelist" id="devFileList"></div>
-                <pre class="os-dev-fileview" id="devFileView">Select a file...</pre>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cyber Suite Window -->
-    <div class="os-library-window" id="cyberWindow">
-        <div class="os-lib-titlebar">
-            <span class="os-lib-title">🛡 AKI CYBER SUITE — DEFENSIVE</span>
-            <div class="os-lib-controls">
-                <button id="btnCyberMin">—</button>
-                <button id="btnCyberMax">▢</button>
-                <button id="btnCyberClose" class="close">✕</button>
-            </div>
-        </div>
-        <div class="os-lib-body">
-            <div class="os-cyber-tools">
-                <button class="os-cyber-tool" data-tool="recon">🌐 NETWORK RECON</button>
-                <button class="os-cyber-tool" data-tool="port_scan">🔌 PORT SCAN</button>
-                <button class="os-cyber-tool" data-tool="audit">🛡 SECURITY AUDIT</button>
-                <button class="os-cyber-tool" data-tool="connections">📡 CONNECTIONS</button>
-            </div>
-            <div class="os-cyber-note">Defensive tools — sirf is machine ke liye. Result chat mein bhi aayega.</div>
-            <pre class="os-cyber-output" id="cyberOutput">Select a tool to begin...</pre>
-        </div>
-    </div>
 
     <!-- Settings Drawer -->
     <div class="os-settings-backdrop" id="settingsBackdrop"></div>

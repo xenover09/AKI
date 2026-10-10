@@ -56,9 +56,7 @@ class AKIBridge(QObject):
         action_system: Optional[Any] = None,
         speech_transcriber: Optional[Any] = None,
         speech_service: Optional[Any] = None,
-        reminder_manager: Optional[Any] = None,
-        knowledge_library: Optional[Any] = None,
-        app_settings: Optional[Any] = None,
+        reminder_manager: Optional[Any] = None,        app_settings: Optional[Any] = None,
         parent: Optional[QObject] = None,
     ) -> None:
         """Initialize the AKI JavaScript-Python Bridge.
@@ -92,12 +90,8 @@ class AKIBridge(QObject):
         self._speech_transcriber = speech_transcriber
         self._speech = speech_service
         self._reminder_manager = reminder_manager
-        self._knowledge = knowledge_library
-
 
         if ai_service is not None:
-            from dev_agent.agent import DevAgent
-
             self._dev_agent = DevAgent(
                 ai_responder=lambda prompt: ai_service.respond(
                     prompt
@@ -264,159 +258,7 @@ class AKIBridge(QObject):
     # ============================================================
 
     # ============================================================
-    # Dev Agent + Cyber Suite
-    # ============================================================
-
-    @Slot(str, str, str, result=dict)
-    def createDevProject(
-        self,
-        kind: str,
-        name: str,
-        description: str,
-    ) -> Dict[str, Any]:
-        """Queue an AI project build; result arrives via aiResponseReady."""
-
-        if self._dev_agent is None:
-            return {
-                "status": "NO_PROVIDER",
-                "request_id": "",
-                "response": "Dev Agent ke liye AI provider chahiye (.env API key).",
-            }
-
-        request_id = uuid4().hex[:12]
-
-        threading.Thread(
-            target=self._run_project_build,
-            args=(request_id, kind, name, description),
-            daemon=True,
-            name=f"aki-dev-{request_id}",
-        ).start()
-
-        return {"status": "PENDING", "request_id": request_id}
-
-    def _run_project_build(
-        self,
-        request_id: str,
-        kind: str,
-        name: str,
-        description: str,
-    ) -> None:
-        """Worker: generate code via AI and write the project folder."""
-
-        try:
-            result = self._dev_agent.create_project(
-                kind=kind,
-                name=name,
-                description=description,
-            )
-            self._providerSucceeded.emit(
-                request_id,
-                f"{result.summary()}\n\nProject folder khulne ke liye DEV window mein 'Open' dabayen.",
-            )
-        except Exception as error:  # noqa: BLE001
-            logger.exception("Dev project build failed.")
-            self._providerFailed.emit(request_id, str(error))
-
-    @Slot(result=list)
-    def getDevProjects(self) -> list:
-        """List generated projects for the DEV window."""
-
-        if self._dev_agent is None:
-            return []
-
-        return self._dev_agent.list_projects()
-
-    @Slot(str)
-    def openProjectFolder(self, path: str) -> None:
-        """Open a generated project folder in Explorer."""
-
-        from PySide6.QtCore import QUrl
-        from PySide6.QtGui import QDesktopServices
-
-        if path:
-            QDesktopServices.openUrl(QUrl.fromLocalFile(path))
-
-    @Slot(str, result=list)
-    def getProjectFiles(self, path: str) -> list:
-        """List files of a generated project (AKI-internal viewer)."""
-
-        from pathlib import Path as _Path
-
-        try:
-            root = _Path(path).resolve()
-            projects_root = self._dev_agent.projects_root.resolve() if self._dev_agent else None
-
-            if projects_root is None or projects_root not in root.parents:
-                return []
-
-            return [
-                str(item.relative_to(root))
-                for item in sorted(root.rglob("*"))
-                if item.is_file()
-            ]
-        except Exception:
-            return []
-
-    @Slot(str, str, result=str)
-    def readProjectFile(self, path: str, relative: str) -> str:
-        """Read one project file for the AKI-internal viewer."""
-
-        from pathlib import Path as _Path
-
-        try:
-            root = _Path(path).resolve()
-            target = (root / relative).resolve()
-
-            if self._dev_agent is None:
-                return ""
-
-            projects_root = self._dev_agent.projects_root.resolve()
-
-            if projects_root not in target.parents and target.parent != projects_root:
-                return "[blocked]"
-
-            if target.stat().st_size > 200_000:
-                return "[File bohat bari hai — PC mein kholein]"
-
-            return target.read_text(encoding="utf-8", errors="replace")
-        except Exception:
-            return "[Read failed]"
-
-    @Slot(str, str, result=dict)
-    def runSecurityTool(self, tool: str, parameter: str = "") -> Dict[str, Any]:
-        """Run one defensive security tool (worker for slow scans)."""
-
-        request_id = uuid4().hex[:12]
-
-        threading.Thread(
-            target=self._run_security_tool,
-            args=(request_id, tool, parameter),
-            daemon=True,
-            name=f"aki-sec-{request_id}",
-        ).start()
-
-        return {"status": "PENDING", "request_id": request_id}
-
-    def _run_security_tool(
-        self,
-        request_id: str,
-        tool: str,
-        parameter: str,
-    ) -> None:
-        """Worker: execute the tool and emit a chat-visible summary."""
-
-        detail = "Security suite has been removed in Phase A."
-        summary = f"[{tool.upper()}] Security checks disabled."
-        msg = f"<b>{summary}</b>\n<pre>{detail}</pre>"
-        
-        self._providerSucceeded.emit(
-            request_id,
-            msg
-        )
-
-    # ============================================================
-    # Dev Agent + Cyber Suite (end)
-    # ============================================================
+        # ============================================================
 
     @Slot(result=dict)
     def addBookFromDialog(self) -> Dict[str, Any]:

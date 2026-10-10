@@ -148,9 +148,7 @@ class AKIApplication:
             action_system=action_system,
             speech_transcriber=self._build_speech_transcriber(),
             speech_service=SpeechService(),
-            reminder_manager=reminder_manager,
-            knowledge_library=knowledge_library,
-            app_settings=self._runtime.boot.settings,
+            reminder_manager=reminder_manager,            app_settings=self._runtime.boot.settings,
         )
 
     def _build_speech_transcriber(self):
