@@ -105,3 +105,26 @@
     --aki-transition-normal: 250ms cubic-bezier(0.16, 1, 0.3, 1);
     --aki-transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+
+/* Light Theme Overrides */
+body.theme-light {
+    --aki-color-bg-void: #F4F4F6;
+    --aki-color-bg-navy: #FFFFFF;
+    --aki-color-bg-surface-base: #FFFFFF;
+    --aki-color-bg-surface-elevated: #F4F4F6;
+    --aki-color-bg-surface-hover: #E2E2E8;
+    --aki-color-bg-input: #FFFFFF;
+
+    --aki-color-neon-cyan: #A259FF;
+    --aki-color-electric-blue: #A259FF;
+
+    --aki-color-text-primary: #1A1A20;
+    --aki-color-text-secondary: #6B6B76;
+    --aki-color-text-muted: #6B6B76;
+    --aki-color-text-accent: #A259FF;
+
+    --aki-border-subtle: #E2E2E8;
+    --aki-border-light: #E2E2E8;
+    --aki-border-accent: #A259FF;
+}

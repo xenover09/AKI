@@ -695,6 +695,17 @@
                         : "Connected nahi — .env check karein";
                 }
             });
+            
+            if (typeof bridge.getAppearance === "function") {
+                bridge.getAppearance().then((mode) => {
+                    const appearanceRadios = document.querySelectorAll('input[name="theme_app"]');
+                    appearanceRadios.forEach(radio => {
+                        if (radio.value === mode) {
+                            radio.checked = true;
+                        }
+                    });
+                });
+            }
         }
 
         function setBadge(el, on) {
@@ -720,6 +731,15 @@
                 }
             };
         }
+
+        const appearanceRadios = document.querySelectorAll('input[name="theme_app"]');
+        appearanceRadios.forEach(radio => {
+            radio.onchange = (e) => {
+                if (bridge && typeof bridge.setAppearance === "function") {
+                    bridge.setAppearance(e.target.value);
+                }
+            };
+        });
     }
 
     // 7. QWebChannel Setup

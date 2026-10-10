@@ -86,6 +86,11 @@ class AKIWebView(QWebEngineView):
         """
         return self._bridge
 
+    def set_web_theme(self, is_light: bool) -> None:
+        """Inject JS to toggle the web theme dynamically."""
+        js = "document.body.classList.add('theme-light');" if is_light else "document.body.classList.remove('theme-light');"
+        self.page().runJavaScript(js)
+
     def _configure_web_engine(self) -> None:
         """Apply transparent background and WebEngine settings."""
         self.page().setBackgroundColor(Qt.GlobalColor.transparent)

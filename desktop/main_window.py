@@ -137,6 +137,23 @@ class MainWindow(QMainWindow):
             self._web_view.focusProxy().installEventFilter(self)
         layout.addWidget(self._web_view)
 
+        # Dynamic Theme Linking
+        from desktop.themes.theme_manager import ThemeManager
+        tm = ThemeManager.get_instance()
+        if tm:
+            tm.themeChanged.connect(self._on_theme_changed)
+            # initial web theme set when load finishes
+            self._web_view.loadFinished.connect(
+                lambda ok: self._web_view.set_web_theme(not tm.is_dark()) if ok else None
+            )
+
+    def _on_theme_changed(self, theme):
+        """Re-skin webview when Qt theme changes dynamically."""
+        from desktop.themes.theme_manager import ThemeManager
+        tm = ThemeManager.get_instance()
+        if tm and hasattr(self, "_web_view"):
+            self._web_view.set_web_theme(not tm.is_dark())
+
     def changeEvent(self, event) -> None:
         """Track window state changes (e.g. Maximize/Restore) and notify bridge."""
         super().changeEvent(event)

@@ -38,7 +38,10 @@ class AKIApplication:
         """
         self._app: QApplication = QApplication(argv)
         self._runtime = runtime
-        self._theme: AkiTheme = AkiTheme()
+        
+        from desktop.themes.theme_manager import ThemeManager
+        self._theme_manager = ThemeManager(self._app)
+        
         self._splash: SplashScreen | None = None
         self._main_window: MainWindow | None = None
         self._tray = None
@@ -53,7 +56,7 @@ class AKIApplication:
         """Apply application-wide metadata and global stylesheet."""
         self._app.setApplicationName("AKI")
         self._app.setOrganizationName("AKI")
-        self._app.setStyleSheet(self._theme.global_stylesheet())
+        # ThemeManager already applies the stylesheet during init
 
     def run(self) -> int:
         """Start the AKI application event loop.

@@ -565,6 +565,21 @@ class AKIBridge(QObject):
         if self._speech is not None:
             self._speech.stop()
 
+    @Slot(str)
+    def setAppearance(self, mode: str) -> None:
+        """Set the application appearance mode (dark, light, system)."""
+        from desktop.themes.theme_manager import ThemeManager
+        tm = ThemeManager.get_instance()
+        if tm:
+            tm.set_appearance(mode)
+
+    @Slot(result=str)
+    def getAppearance(self) -> str:
+        """Get the current appearance mode."""
+        from desktop.themes.theme_manager import ThemeManager
+        tm = ThemeManager.get_instance()
+        return tm.get_appearance() if tm else "dark"
+
     @Slot(str, str, result=dict)
     def transcribeAudio(
         self,
