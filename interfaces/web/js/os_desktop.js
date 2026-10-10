@@ -259,6 +259,11 @@
 
         getChatPanel().classList.add("visible");
 
+        const emptyState = document.getElementById("chatEmptyState");
+        if (emptyState && emptyState.parentNode === feed) {
+            emptyState.style.display = "none";
+        }
+
         const bubble = document.createElement("div");
         bubble.className = "os-chat-bubble typing";
         bubble.innerHTML = "<span class='dot'></span><span class='dot'></span><span class='dot'></span>";
@@ -317,6 +322,11 @@
 
         // Keep strict chronological order: a pending typing bubble is
         // temporarily lifted so the new message lands before it.
+        const emptyState = document.getElementById("chatEmptyState");
+        if (emptyState && emptyState.parentNode === feed) {
+            emptyState.style.display = "none";
+        }
+
         const pending = activeTypingBubble;
 
         const bubble = document.createElement("div");
@@ -365,7 +375,9 @@
         setOrbState("idle");
 
         const feed = getChatMessages();
-        if (feed) feed.innerHTML = "";
+        if (feed) {
+            feed.innerHTML = '<div class="os-chat-empty-state" id="chatEmptyState">Ask AKI anything to get started</div>';
+        }
 
         const panel = getChatPanel();
         if (panel) panel.classList.remove("visible");
