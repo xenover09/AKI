@@ -14,7 +14,7 @@ from PySide6.QtCore import QPoint, QRect, QSettings, QSize, Qt
 from PySide6.QtGui import QCursor, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 from desktop.web_view import AKIWebView
 from desktop.window_effects import WindowEffects
 from logs.logger import get_logger
@@ -43,6 +43,8 @@ class MainWindow(QMainWindow):
         speech_transcriber: Optional[Any] = None,
         speech_service: Optional[Any] = None,
         reminder_manager: Optional[Any] = None,
+        knowledge_library: Optional[Any] = None,
+        app_settings: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         """Initialize the main window shell.
@@ -70,9 +72,14 @@ class MainWindow(QMainWindow):
         self._speech_transcriber = speech_transcriber
         self._speech_service = speech_service
         self._reminder_manager = reminder_manager
+        self._knowledge_library = knowledge_library
+        self._app_settings = app_settings
         self._settings = QSettings("AKI", "DesktopOS")
         self._drag_position: QPoint = QPoint()
         self._is_dragging: bool = False
+        self._tray_controller = None
+        self._tray_hint_shown: bool = False
+        self._force_close: bool = False
 
         self._configure_window()
         self._build_ui()
@@ -120,6 +127,8 @@ class MainWindow(QMainWindow):
             speech_transcriber=self._speech_transcriber,
             speech_service=self._speech_service,
             reminder_manager=self._reminder_manager,
+            knowledge_library=self._knowledge_library,
+            app_settings=self._app_settings,
             parent=self,
         )
         self._web_view.bridge().set_window_reference(self)
@@ -186,8 +195,8 @@ class MainWindow(QMainWindow):
     def _apply_effects(self) -> None:
         """Apply Windows acrylic blur effects if supported."""
         try:
-            effects = WindowEffects(self, BlueTheme())
-            effects.enable_acrylic_blur()
+            effects = WindowEffects(self, AkiTheme())
+            # effects.enable_acrylic_blur() # Disabled for Dark Solid aesthetic
         except Exception as err:
             logger.debug("Platform window effect application notice: %s", err)
 
@@ -215,9 +224,27 @@ class MainWindow(QMainWindow):
         self._settings.setValue("is_maximized", self.isMaximized())
 
     def closeEvent(self, event) -> None:
-        """Save window geometry on close."""
+        """Save geometry; hide to tray instead of exiting when tray is active."""
         self._save_window_geometry()
+
+        if self._tray_controller is not None and not self._force_close:
+            event.ignore()
+            self.hide()
+
+            if not self._tray_hint_shown:
+                self._tray_hint_shown = True
+                self._tray_controller.notify(
+                    "AKI is still running",
+                    "AKI tray mein chal raha hai. Quit ke liye tray icon > Quit AKI use karein.",
+                )
+            return
+
         super().closeEvent(event)
+
+    def set_tray_controller(self, tray_controller) -> None:
+        """Enable close-to-tray behavior with the given controller."""
+
+        self._tray_controller = tray_controller
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         """Save geometry on resize when not maximized."""

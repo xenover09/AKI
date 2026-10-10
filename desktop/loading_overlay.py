@@ -8,7 +8,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QResizeEvent
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 from desktop.widgets.animated_icon import AnimatedIcon
 
 
@@ -21,7 +21,7 @@ class LoadingOverlay(QWidget):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         parent: QWidget,
         spinner_icon: Optional[QIcon] = None,
     ) -> None:

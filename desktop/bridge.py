@@ -15,7 +15,7 @@ import threading
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
-from PySide6.QtCore import QMetaObject, QObject, Qt, Signal, Slot
+from PySide6.QtCore import QMetaObject, QObject, QSettings, Qt, Signal, Slot
 
 from aki_core.intent_engine import IntentEngine
 from logs.logger import get_logger
@@ -57,6 +57,8 @@ class AKIBridge(QObject):
         speech_transcriber: Optional[Any] = None,
         speech_service: Optional[Any] = None,
         reminder_manager: Optional[Any] = None,
+        knowledge_library: Optional[Any] = None,
+        app_settings: Optional[Any] = None,
         parent: Optional[QObject] = None,
     ) -> None:
         """Initialize the AKI JavaScript-Python Bridge.
@@ -72,9 +74,13 @@ class AKIBridge(QObject):
             speech_transcriber: Optional speech-to-text backend for voice input.
             speech_service: Optional text-to-speech service for spoken replies.
             reminder_manager: Optional persistence for scheduled reminders.
+            knowledge_library: Optional book library for page-cited answers.
+            app_settings: Optional boot Settings snapshot for the UI panel.
             parent: Optional Qt parent object.
         """
         super().__init__(parent)
+        self._app_settings = app_settings
+        self._settings = QSettings("AKI", "DesktopOS")
         self._telemetry_service: TelemetryService = (
             telemetry_service if telemetry_service is not None else TelemetryService()
         )
@@ -86,6 +92,22 @@ class AKIBridge(QObject):
         self._speech_transcriber = speech_transcriber
         self._speech = speech_service
         self._reminder_manager = reminder_manager
+        self._knowledge = knowledge_library
+
+        from security.suite import CyberSuite
+
+        self._cyber = CyberSuite()
+
+        if ai_service is not None:
+            from dev_agent.agent import DevAgent
+
+            self._dev_agent = DevAgent(
+                ai_responder=lambda prompt: ai_service.respond(
+                    prompt
+                ).content,
+            )
+        else:
+            self._dev_agent = None
 
         from services.web_search import WebSearchService
 
@@ -100,6 +122,7 @@ class AKIBridge(QObject):
         self._daily_fired: Dict[str, str] = {}
         self._scheduler_timer = None
         self._speech_player = None
+        self._speech_audio_output = None
 
         if self._speech is not None:
             self._speech.set_playback_handler(
@@ -109,6 +132,7 @@ class AKIBridge(QObject):
 
         self._speechFileReady.connect(self._play_speech_file)
         self._start_reminder_scheduler()
+        self.apply_persisted_settings()
 
         self._providerSucceeded.connect(self._on_provider_success)
         self._providerFailed.connect(self._on_provider_failure)
@@ -212,6 +236,16 @@ class AKIBridge(QObject):
         """Report whether a real intelligence provider is available."""
         return self._ai_service is not None
 
+    @Slot(str)
+    def copyToClipboard(self, text: str) -> None:
+        """Copy message text to the system clipboard."""
+
+        from PySide6.QtGui import QGuiApplication
+
+        if text:
+            QGuiApplication.clipboard().setText(text)
+            logger.info("Copied %d chars to clipboard.", len(text))
+
     @Slot()
     def clearConversation(self) -> None:
         """Discard the active conversation; the next prompt starts fresh."""
@@ -227,6 +261,322 @@ class AKIBridge(QObject):
     def isVoiceInputConfigured(self) -> bool:
         """Report whether a speech-to-text backend is available."""
         return self._speech_transcriber is not None
+
+    # ============================================================
+    # Settings panel
+    # ============================================================
+
+    # ============================================================
+    # Dev Agent + Cyber Suite
+    # ============================================================
+
+    @Slot(str, str, str, result=dict)
+    def createDevProject(
+        self,
+        kind: str,
+        name: str,
+        description: str,
+    ) -> Dict[str, Any]:
+        """Queue an AI project build; result arrives via aiResponseReady."""
+
+        if self._dev_agent is None:
+            return {
+                "status": "NO_PROVIDER",
+                "request_id": "",
+                "response": "Dev Agent ke liye AI provider chahiye (.env API key).",
+            }
+
+        request_id = uuid4().hex[:12]
+
+        threading.Thread(
+            target=self._run_project_build,
+            args=(request_id, kind, name, description),
+            daemon=True,
+            name=f"aki-dev-{request_id}",
+        ).start()
+
+        return {"status": "PENDING", "request_id": request_id}
+
+    def _run_project_build(
+        self,
+        request_id: str,
+        kind: str,
+        name: str,
+        description: str,
+    ) -> None:
+        """Worker: generate code via AI and write the project folder."""
+
+        try:
+            result = self._dev_agent.create_project(
+                kind=kind,
+                name=name,
+                description=description,
+            )
+            self._providerSucceeded.emit(
+                request_id,
+                f"{result.summary()}\n\nProject folder khulne ke liye DEV window mein 'Open' dabayen.",
+            )
+        except Exception as error:  # noqa: BLE001
+            logger.exception("Dev project build failed.")
+            self._providerFailed.emit(request_id, str(error))
+
+    @Slot(result=list)
+    def getDevProjects(self) -> list:
+        """List generated projects for the DEV window."""
+
+        if self._dev_agent is None:
+            return []
+
+        return self._dev_agent.list_projects()
+
+    @Slot(str)
+    def openProjectFolder(self, path: str) -> None:
+        """Open a generated project folder in Explorer."""
+
+        from PySide6.QtCore import QUrl
+        from PySide6.QtGui import QDesktopServices
+
+        if path:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
+    @Slot(str, result=list)
+    def getProjectFiles(self, path: str) -> list:
+        """List files of a generated project (AKI-internal viewer)."""
+
+        from pathlib import Path as _Path
+
+        try:
+            root = _Path(path).resolve()
+            projects_root = self._dev_agent.projects_root.resolve() if self._dev_agent else None
+
+            if projects_root is None or projects_root not in root.parents:
+                return []
+
+            return [
+                str(item.relative_to(root))
+                for item in sorted(root.rglob("*"))
+                if item.is_file()
+            ]
+        except Exception:
+            return []
+
+    @Slot(str, str, result=str)
+    def readProjectFile(self, path: str, relative: str) -> str:
+        """Read one project file for the AKI-internal viewer."""
+
+        from pathlib import Path as _Path
+
+        try:
+            root = _Path(path).resolve()
+            target = (root / relative).resolve()
+
+            if self._dev_agent is None:
+                return ""
+
+            projects_root = self._dev_agent.projects_root.resolve()
+
+            if projects_root not in target.parents and target.parent != projects_root:
+                return "[blocked]"
+
+            if target.stat().st_size > 200_000:
+                return "[File bohat bari hai — PC mein kholein]"
+
+            return target.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            return "[Read failed]"
+
+    @Slot(str, str, result=dict)
+    def runSecurityTool(self, tool: str, parameter: str = "") -> Dict[str, Any]:
+        """Run one defensive security tool (worker for slow scans)."""
+
+        request_id = uuid4().hex[:12]
+
+        threading.Thread(
+            target=self._run_security_tool,
+            args=(request_id, tool, parameter),
+            daemon=True,
+            name=f"aki-sec-{request_id}",
+        ).start()
+
+        return {"status": "PENDING", "request_id": request_id}
+
+    def _run_security_tool(
+        self,
+        request_id: str,
+        tool: str,
+        parameter: str,
+    ) -> None:
+        """Worker: execute the tool and emit a chat-visible summary."""
+
+        if tool == "port_scan" and parameter.strip():
+            result = self._cyber.run("port_scan", host=parameter.strip())
+        elif tool == "file_hashes" and parameter.strip():
+            result = self._cyber.run("file_hashes", path=parameter.strip())
+        else:
+            result = self._cyber.run(tool)
+
+        if result.ok:
+            detail = ""
+
+            if result.tool == "port_scan" and result.data.get("open"):
+                detail = f" Open ports: {result.data['open']}"
+
+            if result.tool == "connections":
+                rows = result.data.get("connections", [])
+                top = "\n".join(
+                    f"- {row['process']} -> {row['remote']}"
+                    for row in rows[:8]
+                )
+                detail = f"\n{top}" if top else ""
+
+            if result.tool == "audit":
+                detail = f"\n```json\n{result.data}\n```"
+
+            if result.tool == "recon":
+                interfaces = "\n".join(
+                    f"- {i['interface']}: {i['ip']}"
+                    for i in result.data.get("interfaces", [])
+                )
+                detail = (
+                    f"\n{interfaces}\n- Public IP: "
+                    f"{result.data.get('public_ip', 'n/a')}"
+                )
+
+            self._providerSucceeded.emit(
+                request_id,
+                f"🛡 **{result.tool.upper()}** — {result.summary}{detail}",
+            )
+        else:
+            self._providerFailed.emit(request_id, result.summary)
+
+    # ============================================================
+    # Dev Agent + Cyber Suite (end)
+    # ============================================================
+
+    @Slot(result=dict)
+    def addBookFromDialog(self) -> Dict[str, Any]:
+        """Open a file dialog, ingest the book, and report the outcome."""
+
+        if self._knowledge is None:
+            return {"added": False, "error": "Knowledge subsystem unavailable"}
+
+        from PySide6.QtWidgets import QFileDialog
+
+        path, _ = QFileDialog.getOpenFileName(
+            self._window_ref,
+            "Add Book to AKI Knowledge",
+            "",
+            "Books (*.pdf *.txt *.md);;All Files (*.*)",
+        )
+
+        if not path:
+            return {"added": False}
+
+        try:
+            book = self._knowledge.ingest(path)
+        except Exception as error:
+            logger.warning("Book ingestion failed: %s", error)
+            return {"added": False, "error": str(error)}
+
+        logger.info(
+            "Book ingested | %s (%d pages)", book.title, book.page_count
+        )
+
+        return {
+            "added": True,
+            "title": book.title,
+            "pages": book.page_count,
+        }
+
+    @Slot(result=list)
+    def getBooks(self) -> list:
+        """Return the ingested knowledge library for the UI panel."""
+
+        if self._knowledge is None:
+            return []
+
+        return [
+            {
+                "title": book.title,
+                "pages": book.page_count,
+                "topics": list(book.topics),
+            }
+            for book in self._knowledge.list_books()
+        ]
+
+    @Slot(result=dict)
+    def getSettings(self) -> Dict[str, Any]:
+        """
+        Snapshot of user-adjustable settings for the UI panel.
+
+        `ai_provider` / `ai_model` come from the boot Settings object
+        injected at construction. When no Settings object was provided
+        (only possible in tests or degenerate wiring), they legitimately
+        read "unknown" / "" — the UI renders that as an OFFLINE badge.
+        """
+
+        settings_snapshot = self._app_settings
+
+        provider = (
+            settings_snapshot.ai_provider
+            if settings_snapshot is not None
+            else None
+        )
+        model = (
+            settings_snapshot.ai_model
+            if settings_snapshot is not None
+            else None
+        )
+
+        return {
+            "voice_output": self._voice_enabled,
+            "tts_voice": self._effective_tts_voice(),
+            "available_voices": list(
+                self._speech.available_voices()
+            )
+            if self._speech
+            else [],
+            "voice_input": self._speech_transcriber is not None,
+            "ai_provider": provider or "unknown",
+            "ai_model": model or "",
+            "ai_connected": self._ai_service is not None,
+        }
+
+    def _effective_tts_voice(self) -> str:
+        """Return the neural voice that will actually be used next."""
+
+        if self._speech is None:
+            return ""
+
+        name = self._speech.voice_name
+        available = self._speech.available_voices()
+
+        if name not in available and available:
+            return available[0]
+
+        return name
+
+    @Slot(str, result=bool)
+    def setTtsVoice(self, voice: str) -> bool:
+        """Select the neural TTS voice; persists across restarts."""
+
+        if self._speech is None:
+            return False
+
+        accepted = self._speech.set_voice(voice)
+
+        if accepted:
+            self._settings.setValue("tts_voice", voice)
+
+        return accepted
+
+    def apply_persisted_settings(self) -> None:
+        """Restore saved preferences (called once after construction)."""
+
+        saved_voice = self._settings.value("tts_voice", "")
+
+        if saved_voice and self._speech is not None:
+            self._speech.set_voice(str(saved_voice))
 
     @Slot(bool)
     def setVoiceOutputEnabled(self, enabled: bool) -> None:
@@ -380,6 +730,12 @@ class AKIBridge(QObject):
         output = QAudioOutput()
         output.setVolume(1.0)
         player.setAudioOutput(output)
+
+        # CRITICAL: keep a Python reference to the audio output.
+        # Without it the wrapper can be garbage-collected and the
+        # player goes silent while still reporting "playing".
+        self._speech_audio_output = output
+
         player.setSource(QUrl.fromLocalFile(str(audio_file)))
 
         self._speech_player = player
@@ -392,6 +748,7 @@ class AKIBridge(QObject):
             audio_file.unlink(missing_ok=True)
             if self._speech_player is player:
                 self._speech_player = None
+                self._speech_audio_output = None
             if self._speech is not None:
                 self._speech.notify_playback_finished()
 
@@ -403,9 +760,14 @@ class AKIBridge(QObject):
             audio_file.unlink(missing_ok=True)
             if self._speech_player is player:
                 self._speech_player = None
+                self._speech_audio_output = None
             if self._speech is not None and text:
                 self._speech.speak_with_sapi_direct(text)
 
+        def _on_status(status) -> None:
+            logger.info("Speech player status: %s", status)
+
+        player.mediaStatusChanged.connect(_on_status)
         player.mediaStatusChanged.connect(
             lambda status: _cleanup()
             if status == QMediaPlayer.MediaStatus.EndOfMedia
@@ -419,6 +781,99 @@ class AKIBridge(QObject):
     # ============================================================
     # Reminders: creation, listing, and the firing loop
     # ============================================================
+
+    def _intent_reply(self, text: str, reply: str, decision: Any) -> Dict[str, Any]:
+        """Shared persistence + payload for deterministic intents."""
+
+        self._persist_user_message(text)
+        self._persist_assistant_message(reply)
+        self._speak_if_enabled(reply)
+
+        return {
+            "status": "SUCCESS",
+            "request_id": "",
+            "response": reply,
+            "action": decision.action,
+            "execution": "success",
+        }
+
+    def _handle_knowledge_intent(self, action: str) -> Optional[str]:
+        """Serve book-library intents (add/list)."""
+
+        if self._knowledge is None:
+            return None
+
+        if action == "add_book":
+            from PySide6.QtWidgets import QFileDialog
+
+            path, _ = QFileDialog.getOpenFileName(
+                self._window_ref,
+                "Add Book to AKI Knowledge",
+                "",
+                "Books (*.pdf *.txt *.md);;All Files (*.*)",
+            )
+
+            if not path:
+                return None
+
+            try:
+                book = self._knowledge.ingest(path)
+            except Exception as error:
+                logger.warning("Book ingestion failed: %s", error)
+                return f"Book add nahi ho saki: {error}"
+
+            logger.info("Book ingested | %s (%d pages)", book.title, book.page_count)
+
+            return (
+                f"Done ✅ '{book.title}' meri knowledge mein add ho gayi — "
+                f"{book.page_count} pages. Ab is ke baare mein kuch bhi poocho!"
+            )
+
+        if action == "list_books":
+            books = self._knowledge.list_books()
+
+            if not books:
+                return (
+                    "Library khali hai. 📚 sidebar button se ya 'book add "
+                    "karo' bolkar PDF add karein."
+                )
+
+            lines = []
+            for book in books[:12]:
+                topics = (
+                    ", ".join(book.topics[:4]) if book.topics else "general"
+                )
+                lines.append(
+                    f"- **{book.title}** ({book.page_count} pages) — {topics}"
+                )
+
+            return (
+                "Tumhari knowledge library:\n" + "\n".join(lines)
+            )
+
+        return None
+
+    def _collect_book_context(self, query: str) -> list[str]:
+        """Return page-cited book excerpts relevant to the question."""
+
+        if self._knowledge is None:
+            return []
+
+        try:
+            matches = self._knowledge.search(query, limit=6)
+        except Exception:
+            logger.exception("Knowledge lookup failed.")
+            return []
+
+        context: list[str] = []
+
+        for match in matches:
+            excerpt = match.chunk.text[:700].replace("\n", " ")
+            context.append(
+                f"[{match.chunk.book_title} · page {match.chunk.page}] {excerpt}"
+            )
+
+        return context
 
     def _handle_reminder_intent(self, action: str, text: str) -> Optional[str]:
         """
@@ -621,23 +1076,21 @@ class AKIBridge(QObject):
         if decision is None:
             return None
 
-        # Reminder intents are handled here (they need the parser,
-        # not the action executor).
+        # Reminder + knowledge intents are handled here (they need
+        # dialogs/parsers, not the action executor).
         if decision.action in ("create_reminder", "list_reminders"):
             reply = self._handle_reminder_intent(decision.action, text)
 
             if reply is not None:
-                self._persist_user_message(text)
-                self._persist_assistant_message(reply)
-                self._speak_if_enabled(reply)
+                return self._intent_reply(text, reply, decision)
 
-                return {
-                    "status": "SUCCESS",
-                    "request_id": "",
-                    "response": reply,
-                    "action": decision.action,
-                    "execution": "success",
-                }
+            return None
+
+        if decision.action in ("add_book", "list_books"):
+            reply = self._handle_knowledge_intent(decision.action)
+
+            if reply is not None:
+                return self._intent_reply(text, reply, decision)
 
             return None
 
@@ -831,10 +1284,13 @@ class AKIBridge(QObject):
         """Worker-thread body: call the provider and report back via signal."""
 
         try:
+            book_context = self._collect_book_context(prompt)
+            combined_memories = list(memories) + book_context
+
             response = self._ai_service.respond(
                 prompt,
                 history=history,
-                memories=memories,
+                memories=combined_memories,
             )
             content = response.content.strip()
 
@@ -855,7 +1311,7 @@ class AKIBridge(QObject):
                     f"{prompt}\n\n{context}\n\n"
                     "(Answer the user's original question using these live results.)",
                     history=history,
-                    memories=memories,
+                    memories=combined_memories,
                 )
                 content = response.content.strip()
 

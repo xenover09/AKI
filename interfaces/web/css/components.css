@@ -70,10 +70,10 @@
     transition: all var(--aki-transition-normal);
 }
 .aki-nav-btn:hover, .aki-nav-btn.active {
-    background: rgba(0, 240, 255, 0.05);
+    background: var(--aki-color-bg-surface-base);
     border-color: var(--aki-border-light);
     color: var(--aki-color-neon-cyan);
-    box-shadow: var(--aki-glow-cyan-sm);
+    
 }
 
 /* --------------------------------------------------------------------------
@@ -137,24 +137,24 @@
     position: absolute;
     width: 290px;
     height: 290px;
-    border: 1px solid rgba(0, 200, 255, 0.5);
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 50%;
     animation: aki-spin-cw 40s linear infinite;
     z-index: 2;
-    box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
+    
 }
 .aki-core-ring-outer::before {
     content: '';
     position: absolute;
     inset: -12px;
-    border: 1px dashed rgba(0, 220, 255, 0.6);
+    border: 1px dashed #13131A;
     border-radius: 50%;
 }
 .aki-core-ring-outer::after {
     content: '';
     position: absolute;
     inset: 12px;
-    border: 1px solid rgba(0, 220, 255, 0.7);
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 50%;
     border-left-color: transparent;
     border-right-color: transparent;
@@ -165,19 +165,19 @@
     position: absolute;
     width: 220px;
     height: 220px;
-    border: 2px solid rgba(0, 240, 255, 0.8);
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 50%;
     border-top-color: transparent;
     border-bottom-color: transparent;
     animation: aki-spin-ccw 25s linear infinite;
-    box-shadow: 0 0 20px rgba(0, 220, 255, 0.6), inset 0 0 20px rgba(0, 220, 255, 0.6);
+    
     z-index: 3;
 }
 .aki-core-ring-inner::before {
     content: '';
     position: absolute;
     inset: -8px;
-    border: 1px solid rgba(0, 220, 255, 0.6);
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 50%;
 }
 
@@ -186,24 +186,24 @@
     position: absolute;
     width: 160px;
     height: 160px;
-    border: 3px solid rgba(0, 255, 255, 1);
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 50%;
     animation: aki-spin-cw 15s linear infinite;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), inset 0 0 30px rgba(0, 255, 255, 0.8);
+    
     z-index: 4;
 }
 .aki-core-ring-third::before {
     content: '';
     position: absolute;
     inset: 6px;
-    border: 1px dashed rgba(0, 255, 255, 0.7);
+    border: 1px dashed #13131A;
     border-radius: 50%;
 }
 .aki-core-ring-third::after {
     content: '';
     position: absolute;
     inset: -24px;
-    border: 1px solid rgba(0, 255, 255, 0.5);
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 50%;
     border-left-color: transparent;
     border-right-color: transparent;
@@ -226,9 +226,9 @@
     justify-content: center;
     background: none;
     border: none;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    
+    
+    -webkit-
 }
 
 /* Ambient glow moved here */
@@ -237,7 +237,7 @@
     position: absolute;
     width: 250px;
     height: 250px;
-    background: rgba(0, 191, 255, 0.35);
+    background: var(--aki-color-bg-surface-base);
     border-radius: 50%;
     filter: blur(80px);
     z-index: -1;
@@ -329,20 +329,20 @@
     display: flex;
     align-items: center;
     gap: var(--aki-space-3);
-    background: rgba(4, 12, 30, 0.6);
-    backdrop-filter: var(--aki-blur-xl);
-    border: 1px solid rgba(0, 191, 255, 0.3);
+    background: var(--aki-color-bg-surface-base);
+    
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 20px;
     padding: 12px 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(0, 191, 255, 0.1);
+    
     transition: all var(--aki-transition-normal);
 }
 .aki-command-bar:focus-within {
-    border-color: rgba(0, 240, 255, 0.6);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.2);
+    border-color: #13131A;
+    
 }
 .aki-cmd-icon {
-    color: rgba(0, 191, 255, 0.8);
+    color: #13131A;
     font-size: 16px;
 }
 .aki-cmd-input {
@@ -373,52 +373,52 @@
 .aki-dock {
     display: flex;
     gap: 10px;
-    background: rgba(4, 12, 30, 0.6);
-    backdrop-filter: var(--aki-blur-xl);
-    border: 1px solid rgba(0, 191, 255, 0.25);
+    background: var(--aki-color-bg-surface-base);
+    
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 16px;
     padding: 10px 15px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.9), inset 0 0 20px rgba(0, 191, 255, 0.1);
+    
 }
 .aki-dock-item {
     width: 45px;
     height: 45px;
     border-radius: 12px;
-    background: rgba(0, 150, 255, 0.1);
-    border: 1px solid rgba(0, 191, 255, 0.2);
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    
 }
 .aki-dock-item:hover {
-    background: rgba(0, 191, 255, 0.25);
-    border-color: rgba(0, 240, 255, 0.6);
+    background: var(--aki-color-bg-surface-base);
+    border-color: #13131A;
     transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.5), 0 0 15px rgba(0, 240, 255, 0.4);
+    
     color: #fff;
 }
 .aki-dock-item.brand {
     position: relative;
     width: 75px;
-    border-color: rgba(0, 240, 255, 0.6);
-    background: rgba(0, 240, 255, 0.05);
+    border-color: #13131A;
+    background: var(--aki-color-bg-surface-base);
     color: #ffffff;
     font-family: var(--aki-font-hud);
     font-size: 14px;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.15);
+    text-shadow: 0 0 10px #13131A;
+    
 }
 .aki-dock-item.brand::before {
     content: '';
     position: absolute;
     width: 44px;
     height: 44px;
-    border: 2px solid rgba(0, 255, 255, 0.9);
+    border: 1px solid var(--aki-border-subtle);
     border-radius: 50%;
     -webkit-mask: conic-gradient(
         transparent 0deg 8deg, 
@@ -443,7 +443,7 @@
         transparent 352deg 360deg
     );
     pointer-events: none;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), inset 0 0 10px rgba(0, 255, 255, 0.8);
+    
     animation: aki-spin-cw 15s linear infinite;
 }
 .aki-dock-item.brand::after {
@@ -451,12 +451,12 @@
     position: absolute;
     width: 52px;
     height: 52px;
-    border: 1px dashed rgba(0, 240, 255, 0.4);
+    border: 1px dashed #13131A;
     border-radius: 50%;
     pointer-events: none;
     animation: aki-spin-ccw 20s linear infinite;
 }
 .aki-dock-item.brand:hover::before {
     border-color: #fff;
-    box-shadow: 0 0 15px #fff, inset 0 0 15px rgba(0, 255, 255, 1);
+    
 }

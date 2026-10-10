@@ -33,11 +33,13 @@
             
             <!-- Left Dock -->
             <nav class="aki-layout-sidebar">
-                <button class="aki-nav-btn active">🏠</button>
-                <button class="aki-nav-btn">⊞</button>
-                <button class="aki-nav-btn">📁</button>
-                <button class="aki-nav-btn">&lt;/&gt;</button>
-                <button class="aki-nav-btn">⚙</button>
+                <button class="aki-nav-btn active" data-nav="home">⌂</button>
+                <button class="aki-nav-btn" data-nav="apps">⊞</button>
+                <button class="aki-nav-btn" data-nav="files">🗀</button>
+                <button class="aki-nav-btn" data-nav="code" id="btnDevNav" title="Dev Agent">&lt;/&gt;</button>
+                <button class="aki-nav-btn" data-nav="security" id="btnCyberNav" title="Cyber Suite">⛨</button>
+                <button class="aki-nav-btn" data-nav="settings" id="btnSettingsNav">⚙</button>
+                <button class="aki-nav-btn" data-nav="library" id="btnLibraryNav" title="Knowledge Library">▤</button>
             </nav>
 
             <!-- Inner Grid (Dashboard Content) -->
@@ -46,25 +48,8 @@
                 <!-- Left Area: Greeting & Quick Actions -->
                 <div class="aki-layout-left aki-fade-in">
                     <div class="greeting-box">
-                        <h1 class="aki-greeting" id="greetingTitle">Good Morning,<br>AETHER</h1>
+                        <h1 class="aki-greeting" id="greetingTitle">Good Morning,<br>SALAAR</h1>
                         <p class="aki-greeting-sub">How can I assist your workflow today?</p>
-                        <div class="aki-waveform">
-                            <svg viewBox="0 0 200 40">
-                                <path d="M0,20 Q10,5 20,20 T40,20 T60,20 T80,10 T100,30 T120,5 T140,20 T160,20 T180,20 T200,20"/>
-                            </svg>
-                        </div>
-                    </div>
-                    
-                    <div class="quick-actions">
-                        <div class="aki-qa-title">QUICK ACTIONS</div>
-                        <div class="aki-qa-grid">
-                            <button class="aki-glass-chip aki-glass-interactive">Open VS Code</button>
-                            <button class="aki-glass-chip aki-glass-interactive">Start Recording</button>
-                            <button class="aki-glass-chip aki-glass-interactive">Take Screenshot</button>
-                            <button class="aki-glass-chip aki-glass-interactive">Open YouTube</button>
-                            <button class="aki-glass-chip aki-glass-interactive">Search Files</button>
-                            <button class="aki-glass-chip aki-glass-interactive">System Cleanup</button>
-                        </div>
                     </div>
 
                     <div class="aki-glass-panel aki-events-panel">
@@ -77,27 +62,20 @@
                     </div>
                 </div>
 
-                <!-- Center Area: Glowing Orb + Dock -->
+                <!-- Center Area: Dock directly beneath -->
                 <div class="aki-layout-center aki-fade-in">
-                    <div class="aki-core-container">
-                        <div class="aki-core-ring-outer"></div>
-                        <div class="aki-core-ring-inner"></div>
-                        <div class="aki-core-ring-third"></div>
-                        <div class="aki-core-orb">AKI</div>
-                    </div>
-
                     <div class="aki-dock">
                         <div class="aki-dock-item brand">AKI</div>
-                        <div class="aki-dock-item">📁</div>
-                        <div class="aki-dock-item">🌍</div>
-                        <div class="aki-dock-item">🌊</div>
-                        <div class="aki-dock-item">⌨</div>
-                        <div class="aki-dock-item">🎵</div>
+                        <div class="aki-dock-item">⊞</div>
+                        <div class="aki-dock-item">◈</div>
+                        <div class="aki-dock-item">◇</div>
+                        <div class="aki-dock-item">◱</div>
+                        <div class="aki-dock-item">◲</div>
                         <div class="aki-dock-item">+</div>
                     </div>
                 </div>
 
-                <!-- Right Area: Status, Live Chat, Command Bar -->
+                <!-- Right Area: Status, Chat, Command -->
                 <div class="aki-layout-right aki-fade-in">
                     <div class="aki-glass-panel">
                         <div class="aki-panel-header">SYSTEM STATUS <span class="aki-topbar-icon">✕</span></div>
@@ -140,6 +118,134 @@
             </main>
         </div>
     </div>
+
+    <!-- Knowledge Library Window (This-PC style) -->
+    <div class="os-library-window" id="libraryWindow">
+        <div class="os-lib-titlebar">
+            <span class="os-lib-title">📚 AKI KNOWLEDGE LIBRARY</span>
+            <div class="os-lib-controls">
+                <button id="btnLibMin" title="Minimize">—</button>
+                <button id="btnLibMax" title="Maximize">▢</button>
+                <button id="btnLibClose" class="close" title="Close">✕</button>
+            </div>
+        </div>
+        <div class="os-lib-body">
+            <div class="os-lib-toolbar">
+                <button class="os-lib-refresh" id="btnRefreshBooks">⟳ REFRESH</button>
+            </div>
+            <div class="os-lib-grid" id="bookGrid"></div>
+            <div class="os-lib-empty" id="libEmpty">📚 Library khali hai — ＋ tile se pehli book add karein</div>
+        </div>
+    </div>
+
+    <!-- Dev Agent Window -->
+    <div class="os-library-window" id="devWindow">
+        <div class="os-lib-titlebar">
+            <span class="os-lib-title">&lt;/&gt; AKI DEV AGENT</span>
+            <div class="os-lib-controls">
+                <button id="btnDevMin">—</button>
+                <button id="btnDevMax">▢</button>
+                <button id="btnDevClose" class="close">✕</button>
+            </div>
+        </div>
+        <div class="os-lib-body">
+            <div class="os-dev-instruction">
+                <textarea class="os-textarea" id="devDesc" rows="3" placeholder="AKI se kya banana hai? Example: meri portfolio website banao dark glass theme ke sath..."></textarea>
+                <button class="os-dev-create" id="btnDevCreate">⚡ BUILD</button>
+            </div>
+
+            <div class="os-lib-toolbar">
+                <span class="os-lib-title">PROJECTS — click: AKI/PC dono options</span>
+                <button class="os-lib-refresh" id="btnDevRefresh">⟳</button>
+            </div>
+            <div class="os-lib-grid" id="devProjectGrid"></div>
+            <div class="os-lib-empty hidden" id="devEmpty">Pehla project banane ke liye upar instruction likhein</div>
+        </div>
+
+        <!-- AKI-internal file viewer -->
+        <div class="os-dev-viewer" id="devViewer">
+            <div class="os-dev-viewer-head">
+                <span id="devViewerTitle">files</span>
+                <button class="os-chat-clear" id="btnDevViewerClose">✕</button>
+            </div>
+            <div class="os-dev-viewer-body">
+                <div class="os-dev-filelist" id="devFileList"></div>
+                <pre class="os-dev-fileview" id="devFileView">Select a file...</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cyber Suite Window -->
+    <div class="os-library-window" id="cyberWindow">
+        <div class="os-lib-titlebar">
+            <span class="os-lib-title">🛡 AKI CYBER SUITE — DEFENSIVE</span>
+            <div class="os-lib-controls">
+                <button id="btnCyberMin">—</button>
+                <button id="btnCyberMax">▢</button>
+                <button id="btnCyberClose" class="close">✕</button>
+            </div>
+        </div>
+        <div class="os-lib-body">
+            <div class="os-cyber-tools">
+                <button class="os-cyber-tool" data-tool="recon">🌐 NETWORK RECON</button>
+                <button class="os-cyber-tool" data-tool="port_scan">🔌 PORT SCAN</button>
+                <button class="os-cyber-tool" data-tool="audit">🛡 SECURITY AUDIT</button>
+                <button class="os-cyber-tool" data-tool="connections">📡 CONNECTIONS</button>
+            </div>
+            <div class="os-cyber-note">Defensive tools — sirf is machine ke liye. Result chat mein bhi aayega.</div>
+            <pre class="os-cyber-output" id="cyberOutput">Select a tool to begin...</pre>
+        </div>
+    </div>
+
+    <!-- Settings Drawer -->
+    <div class="os-settings-backdrop" id="settingsBackdrop"></div>
+    <aside class="os-settings-drawer" id="settingsDrawer">
+        <div class="os-settings-header">
+            <span>SYSTEM SETTINGS</span>
+            <button class="os-chat-clear" id="btnSettingsClose">✕</button>
+        </div>
+
+        <div class="os-settings-body">
+            <div class="os-setting-row">
+                <div class="os-setting-info">
+                    <div class="os-setting-name">Spoken Replies</div>
+                    <div class="os-setting-desc">AKI answers awaz mein bole</div>
+                </div>
+                <label class="os-switch">
+                    <input type="checkbox" id="setVoiceOutput" checked>
+                    <span class="os-slider"></span>
+                </label>
+            </div>
+
+            <div class="os-setting-row">
+                <div class="os-setting-info">
+                    <div class="os-setting-name">TTS Voice</div>
+                    <div class="os-setting-desc">Neural awaz ka intekhab</div>
+                </div>
+                <select class="os-select" id="setTtsVoice"></select>
+            </div>
+
+            <div class="os-setting-row">
+                <div class="os-setting-info">
+                    <div class="os-setting-name">Voice Input</div>
+                    <div class="os-setting-desc" id="setVoiceInputDesc">Whisper speech-to-text</div>
+                </div>
+                <span class="os-status-badge" id="setVoiceInputBadge">—</span>
+            </div>
+
+            <div class="os-setting-row">
+                <div class="os-setting-info">
+                    <div class="os-setting-name">AI Provider</div>
+                    <div class="os-setting-desc" id="setProviderDesc">—</div>
+                </div>
+                <span class="os-status-badge" id="setProviderBadge">—</span>
+            </div>
+
+            <div class="os-settings-footer">
+                AKI Personal AI Ecosystem · v0.1.0
+            </div>
+        </div>
+    </aside>
 
     <!-- Scripts -->
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>

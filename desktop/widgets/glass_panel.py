@@ -1,69 +1,48 @@
-"""Glassmorphism panel container widget."""
+"""Solid panel container widget."""
 
 from __future__ import annotations
 
 from typing import Optional
 
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QFrame, QGraphicsDropShadowEffect, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 class GlassPanel(QFrame):
-    """A translucent, blurred-glass styled container.
-
-    Provides a themed background, rounded corners and a soft drop shadow.
-    Intended as the base surface for cards, dialogs and popovers.
-    """
+    """A solid container panel."""
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         parent: Optional[QWidget] = None,
-        elevated: bool = True,
+        elevated: bool = False,
     ) -> None:
-        """Initialize the glass panel.
-
-        Args:
-            theme: The active theme providing colors, radius and spacing.
-            parent: Optional parent widget.
-            elevated: Whether to apply a drop shadow effect.
-        """
         super().__init__(parent)
         self._theme = theme
         self.setObjectName("glassPanel")
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(
-            theme.spacing.md, theme.spacing.md, theme.spacing.md, theme.spacing.md
+            theme.SPACING_MD, theme.SPACING_MD, theme.SPACING_MD, theme.SPACING_MD
         )
-        self._layout.setSpacing(theme.spacing.sm)
+        self._layout.setSpacing(theme.SPACING_SM)
         self._apply_style()
-        if elevated:
-            self._apply_shadow()
 
     @property
     def content_layout(self) -> QVBoxLayout:
-        """Return the layout content widgets should be added to."""
         return self._layout
 
     def _apply_style(self) -> None:
-        colors = self._theme.colors
-        radius = self._theme.radius
         self.setStyleSheet(
             f"""
             QFrame#glassPanel {{
-                background-color: {colors.glass_fill};
-                border: 1px solid {colors.glass_border};
-                border-radius: {radius.lg}px;
+                background-color: {self._theme.SURFACE_CARD};
+                border: 1px solid {self._theme.BORDER_LIGHT};
+                border-radius: {self._theme.RADIUS_LG}px;
             }}
             """
         )
 
     def _apply_shadow(self) -> None:
-        shadow = QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(self._theme.spacing.xl)
-        shadow.setXOffset(0)
-        shadow.setYOffset(self._theme.spacing.xs)
-        shadow.setColor(QColor(0, 0, 0, 120))
-        self.setGraphicsEffect(shadow)
+        pass

@@ -20,9 +20,9 @@
     inset: 0;
     /* Massive glowing orbs behind the UI to make glassmorphism pop */
     background: 
-        radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 10% 20%, rgba(0, 102, 255, 0.15) 0%, transparent 45%),
-        radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.10) 0%, transparent 50%),
+        none,
+        none,
+        none,
         var(--aki-color-bg-navy);
     pointer-events: none;
     z-index: 0;
@@ -34,8 +34,8 @@
     inset: 0;
     /* High-tech grid */
     background-image: 
-        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+        none,
+        none;
     background-size: 30px 30px;
     pointer-events: none;
     z-index: 1;
@@ -45,7 +45,7 @@
 .aki-scanline {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.2) 51%);
+    background: none;
     background-size: 100% 4px;
     pointer-events: none;
     z-index: 2;
@@ -62,8 +62,8 @@
     justify-content: space-between;
     padding: 0 var(--aki-space-4);
     border-bottom: 1px solid var(--aki-border-subtle);
-    background: rgba(3, 7, 18, 0.5);
-    backdrop-filter: var(--aki-blur-sm);
+    background: var(--aki-color-bg-surface-base);
+    
 }
 
 /* Main Workspace (Row) */
@@ -79,8 +79,8 @@
 .aki-layout-sidebar {
     width: 64px;
     border-right: 1px solid var(--aki-border-subtle);
-    background: rgba(3, 7, 18, 0.4);
-    backdrop-filter: var(--aki-blur-md);
+    background: var(--aki-color-bg-surface-base);
+    
     display: flex;
     flex-direction: column;
     align-items: center;

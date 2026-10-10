@@ -2,7 +2,7 @@
 
 Provides the pure UI shell for memory and recall management. This
 module contains no business logic, AI logic, networking, or database
-access -- it only renders a professional glass layout using BlueTheme
+access -- it only renders a professional glass layout using AkiTheme
 tokens exclusively.
 """
 
@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 class MemoryPage(QWidget):
@@ -60,12 +60,12 @@ class MemoryPage(QWidget):
         """Construct the page title, subtitle, and glass card grid."""
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(
-            BlueTheme.SPACING_XL,
-            BlueTheme.SPACING_XL,
-            BlueTheme.SPACING_XL,
-            BlueTheme.SPACING_XL,
+            AkiTheme.SPACING_XL,
+            AkiTheme.SPACING_XL,
+            AkiTheme.SPACING_XL,
+            AkiTheme.SPACING_XL,
         )
-        root_layout.setSpacing(BlueTheme.SPACING_MD)
+        root_layout.setSpacing(AkiTheme.SPACING_MD)
 
         self._title_label = QLabel(self._TITLE, self)
         self._title_label.setObjectName("pageTitle")
@@ -75,7 +75,7 @@ class MemoryPage(QWidget):
 
         root_layout.addWidget(self._title_label)
         root_layout.addWidget(self._subtitle_label)
-        root_layout.addSpacing(BlueTheme.SPACING_SM)
+        root_layout.addSpacing(AkiTheme.SPACING_SM)
 
         self._scroll_area = QScrollArea(self)
         self._scroll_area.setObjectName("pageScrollArea")
@@ -86,7 +86,7 @@ class MemoryPage(QWidget):
         self._card_container.setObjectName("cardContainer")
 
         self._grid_layout = QGridLayout(self._card_container)
-        self._grid_layout.setSpacing(BlueTheme.SPACING_MD)
+        self._grid_layout.setSpacing(AkiTheme.SPACING_MD)
         self._grid_layout.setContentsMargins(0, 0, 0, 0)
 
         for card_title, card_description in self._CARDS:
@@ -110,19 +110,19 @@ class MemoryPage(QWidget):
         """
         card = QFrame(self._card_container)
         card.setObjectName("glassCard")
-        card.setMinimumSize(BlueTheme.CARD_MIN_WIDTH, BlueTheme.CARD_MIN_HEIGHT)
+        card.setMinimumSize(AkiTheme.CARD_MIN_WIDTH, AkiTheme.CARD_MIN_HEIGHT)
         card.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
         )
 
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(
-            BlueTheme.SPACING_MD,
-            BlueTheme.SPACING_MD,
-            BlueTheme.SPACING_MD,
-            BlueTheme.SPACING_MD,
+            AkiTheme.SPACING_MD,
+            AkiTheme.SPACING_MD,
+            AkiTheme.SPACING_MD,
+            AkiTheme.SPACING_MD,
         )
-        card_layout.setSpacing(BlueTheme.SPACING_XS)
+        card_layout.setSpacing(AkiTheme.SPACING_XS)
 
         title_label = QLabel(title, card)
         title_label.setObjectName("cardTitle")
@@ -154,32 +154,32 @@ class MemoryPage(QWidget):
         Returns:
             The number of columns to use for the card grid.
         """
-        if available_width < BlueTheme.BREAKPOINT_COMPACT:
+        if available_width < AkiTheme.BREAKPOINT_COMPACT:
             return 1
-        if available_width < BlueTheme.BREAKPOINT_WIDE:
+        if available_width < AkiTheme.BREAKPOINT_WIDE:
             return 2
         return 3
 
     def _apply_styles(self) -> None:
-        """Apply the glass stylesheet using BlueTheme tokens only."""
+        """Apply the glass stylesheet using AkiTheme tokens only."""
         self.setStyleSheet(
             f"""
             QWidget {{
-                background-color: {BlueTheme.SURFACE_BASE};
+                background-color: {AkiTheme.SURFACE_BASE};
             }}
             #pageTitle {{
-                color: {BlueTheme.TEXT_PRIMARY};
-                font-family: {BlueTheme.FONT_FAMILY_PRIMARY};
-                font-size: {BlueTheme.FONT_SIZE_TITLE}px;
-                font-weight: {BlueTheme.FONT_WEIGHT_BOLD};
+                color: {AkiTheme.TEXT_PRIMARY};
+                font-family: {AkiTheme.FONT_FAMILY_PRIMARY};
+                font-size: {AkiTheme.FONT_SIZE_TITLE}px;
+                font-weight: {AkiTheme.FONT_WEIGHT_BOLD};
                 background: transparent;
                 border: none;
             }}
             #pageSubtitle {{
-                color: {BlueTheme.TEXT_SECONDARY};
-                font-family: {BlueTheme.FONT_FAMILY_PRIMARY};
-                font-size: {BlueTheme.FONT_SIZE_SUBTITLE}px;
-                font-weight: {BlueTheme.FONT_WEIGHT_REGULAR};
+                color: {AkiTheme.TEXT_SECONDARY};
+                font-family: {AkiTheme.FONT_FAMILY_PRIMARY};
+                font-size: {AkiTheme.FONT_SIZE_SUBTITLE}px;
+                font-weight: {AkiTheme.FONT_WEIGHT_REGULAR};
                 background: transparent;
                 border: none;
             }}
@@ -191,23 +191,23 @@ class MemoryPage(QWidget):
                 background: transparent;
             }}
             #glassCard {{
-                background-color: {BlueTheme.SURFACE_GLASS};
-                border: 1px solid {BlueTheme.BORDER_LIGHT};
-                border-radius: {BlueTheme.RADIUS_LG}px;
+                background-color: {AkiTheme.SURFACE_GLASS};
+                border: 1px solid {AkiTheme.BORDER_LIGHT};
+                border-radius: {AkiTheme.RADIUS_LG}px;
             }}
             #cardTitle {{
-                color: {BlueTheme.TEXT_PRIMARY};
-                font-family: {BlueTheme.FONT_FAMILY_PRIMARY};
-                font-size: {BlueTheme.FONT_SIZE_CARD_TITLE}px;
-                font-weight: {BlueTheme.FONT_WEIGHT_MEDIUM};
+                color: {AkiTheme.TEXT_PRIMARY};
+                font-family: {AkiTheme.FONT_FAMILY_PRIMARY};
+                font-size: {AkiTheme.FONT_SIZE_CARD_TITLE}px;
+                font-weight: {AkiTheme.FONT_WEIGHT_MEDIUM};
                 background: transparent;
                 border: none;
             }}
             #cardDescription {{
-                color: {BlueTheme.TEXT_SECONDARY};
-                font-family: {BlueTheme.FONT_FAMILY_PRIMARY};
-                font-size: {BlueTheme.FONT_SIZE_BODY}px;
-                font-weight: {BlueTheme.FONT_WEIGHT_REGULAR};
+                color: {AkiTheme.TEXT_SECONDARY};
+                font-family: {AkiTheme.FONT_FAMILY_PRIMARY};
+                font-size: {AkiTheme.FONT_SIZE_BODY}px;
+                font-weight: {AkiTheme.FONT_WEIGHT_REGULAR};
                 background: transparent;
                 border: none;
             }}
@@ -223,7 +223,7 @@ class MemoryPage(QWidget):
         self._fade_animation = QPropertyAnimation(
             self._fade_effect, b"opacity", self
         )
-        self._fade_animation.setDuration(BlueTheme.ANIMATION_DURATION_MEDIUM)
+        self._fade_animation.setDuration(AkiTheme.ANIMATION_DURATION_MEDIUM)
         self._fade_animation.setStartValue(0.0)
         self._fade_animation.setEndValue(1.0)
         self._fade_animation.setEasingCurve(QEasingCurve.Type.OutCubic)

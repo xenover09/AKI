@@ -3,7 +3,7 @@
 This module implements the primary landing view of the AKI desktop shell.
 It presents a glassmorphism-styled overview of four core subsystems -
 System Status, AI Core, Memory and Automation - using the shared
-``BlueTheme`` design tokens for all colors, fonts, spacing and radii.
+``AkiTheme`` design tokens for all colors, fonts, spacing and radii.
 
 The page exposes an explicit lifecycle contract (``initialize``,
 ``refresh``, ``cleanup``) so that the hosting shell/router can manage its
@@ -34,11 +34,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 _LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
-_THEME: Final[BlueTheme] = BlueTheme()
+_THEME: Final[AkiTheme] = AkiTheme()
 
 # Timing.
 _REFRESH_INTERVAL_MS: Final[int] = 2000
@@ -75,7 +75,7 @@ class _GlassCard(QFrame):
 
     Renders a translucent, rounded panel containing a title, a primary
     value and a short descriptive line, styled entirely from
-    ``BlueTheme`` tokens.
+    ``AkiTheme`` tokens.
 
     Attributes:
         title: The card's static heading text.
@@ -141,7 +141,7 @@ class _GlassCard(QFrame):
         layout.addWidget(self._description_label)
 
     def _apply_style(self) -> None:
-        """Applies the BlueTheme glassmorphism stylesheet to the card."""
+        """Applies the AkiTheme glassmorphism stylesheet to the card."""
         self.setStyleSheet(
             f"""
             QFrame#glassCard {{

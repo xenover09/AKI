@@ -36,11 +36,11 @@
 /* --- SPEAKING ---------------------------------------------------------- */
 .aki-core-container.state-speaking .aki-core-ring-outer {
     animation-duration: 8s;
-    border-color: rgba(0, 255, 255, 0.85);
+    border-color: #13131A;
 }
 .aki-core-container.state-speaking .aki-core-ring-inner {
     animation-duration: 5s;
-    box-shadow: 0 0 26px rgba(0, 240, 255, 0.9), inset 0 0 26px rgba(0, 240, 255, 0.9);
+    
 }
 .aki-core-container.state-speaking .aki-core-ring-third {
     animation-duration: 2.4s;
@@ -60,7 +60,7 @@
     }
     50% {
         transform: scale(1.07);
-        text-shadow: 0 0 25px #9beaff, 0 0 60px #00e5ff, 0 0 95px #00a2ff;
+        text-shadow: 0 0 25px #9beaff, 0 0 60px #A259FF, 0 0 95px #00a2ff;
     }
 }
 
@@ -68,12 +68,12 @@
     0%, 100% {
         opacity: 0.45;
         transform: scale(0.98);
-        background: rgba(0, 191, 255, 0.35);
+        background: var(--aki-color-bg-surface-base);
     }
     50% {
         opacity: 1;
         transform: scale(1.12);
-        background: rgba(120, 230, 255, 0.55);
+        background: var(--aki-color-bg-surface-base);
     }
 }
 
@@ -96,36 +96,11 @@
 
 /* --------------------------------------------------------------------------
    Live Chat Surface
-   Lives inside the right column, below System Status. Opens downward
-   without covering the orb or status panels.
+   Lives in the right column: opens between System Status and the
+   command bar, stretching up to touch the status panel.
    -------------------------------------------------------------------------- */
 
-.os-chat-panel {
-    display: none;
-    flex-direction: column;
-    width: 100%;
-    min-height: 0;
-    flex: 1 1 auto;
-    border-radius: 16px;
-    overflow: hidden;
-    background: rgba(4, 16, 28, 0.78);
-    border: 1px solid rgba(0, 200, 255, 0.22);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 0 24px rgba(0, 191, 255, 0.06);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-}
-
-.os-chat-panel.visible {
-    display: flex;
-    animation: os-panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes os-panel-in {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Right column hosts status + chat + command bar; chat flexes. */
+/* Right column: status (fixed) + chat (flex) + command (fixed). */
 .aki-layout-right {
     display: flex;
     flex-direction: column;
@@ -136,15 +111,20 @@
     flex: 0 0 auto;
 }
 
-/* Command bar pinned at the bottom of the right column. */
+/* Search bar pinned to the column bottom — level with the dock. */
 .aki-layout-right > .aki-command-wrapper {
     flex: 0 0 auto;
     width: 100%;
     margin-top: auto;
 }
 
-/* Center column: orb vertically centered, dock pinned to the bottom
-   so it lines up with the command bar in the right column. */
+.aki-layout-right > .aki-command-wrapper {
+    flex: 0 0 auto;
+    width: 100%;
+}
+
+/* Center column: orb floats centered, dock pinned to the bottom so
+   it sits on the same line as the search bar in the right column. */
 .aki-layout-center {
     display: flex;
     flex-direction: column;
@@ -161,9 +141,29 @@
     margin-bottom: 0;
 }
 
-/* Events panel sits under Quick Actions in the left column. */
-.aki-events-panel {
-    align-self: stretch;
+.os-chat-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    
+    
+    -webkit-
+}
+
+.os-chat-panel.visible {
+    display: flex;
+    animation: os-panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes os-panel-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .os-chat-header {
@@ -171,8 +171,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    border-bottom: 1px solid rgba(0, 200, 255, 0.18);
-    background: rgba(3, 12, 24, 0.85);
+    border-bottom: 1px solid var(--aki-border-subtle);
+    background: var(--aki-color-bg-surface-base);
     flex-shrink: 0;
 }
 
@@ -180,26 +180,26 @@
     font-family: var(--aki-font-hud, monospace);
     font-size: 10.5px;
     letter-spacing: 2px;
-    color: rgba(120, 225, 255, 0.85);
+    color: #13131A;
 }
 
 .os-chat-clear {
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    border: 1px solid rgba(0, 200, 255, 0.30);
+    border: 1px solid var(--aki-border-subtle);
     background: transparent;
-    color: rgba(160, 235, 255, 0.9);
+    color: #13131A;
     font-size: 11px;
     line-height: 1;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 .os-chat-clear:hover {
-    background: rgba(255, 90, 110, 0.18);
-    border-color: rgba(255, 120, 140, 0.55);
+    background: var(--aki-color-bg-surface-base);
+    border-color: #13131A;
     color: #ffd7dd;
-    box-shadow: 0 0 12px rgba(255, 100, 120, 0.25);
+    
 }
 
 .os-chat-scroll {
@@ -211,11 +211,11 @@
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 200, 255, 0.45) transparent;
+    scrollbar-color: #13131A transparent;
 }
 .os-chat-scroll::-webkit-scrollbar { width: 5px; }
 .os-chat-scroll::-webkit-scrollbar-thumb {
-    background: rgba(0, 200, 255, 0.4);
+    background: var(--aki-color-bg-surface-base);
     border-radius: 3px;
 }
 
@@ -234,18 +234,18 @@
 .os-chat-bubble.user {
     align-self: flex-end;
     color: #eaf7ff;
-    background: linear-gradient(135deg, rgba(0, 140, 200, 0.34), rgba(0, 90, 160, 0.28));
-    border: 1px solid rgba(0, 190, 255, 0.38);
+    background: none;
+    border: 1px solid var(--aki-border-subtle);
     border-bottom-right-radius: 4px;
 }
 
 .os-chat-bubble.aki {
     align-self: flex-start;
     color: #d8f6ff;
-    background: rgba(0, 60, 90, 0.32);
-    border: 1px solid rgba(0, 220, 255, 0.30);
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
     border-bottom-left-radius: 4px;
-    text-shadow: 0 0 12px rgba(0, 220, 255, 0.25);
+    text-shadow: 0 0 12px #13131A;
 }
 
 @keyframes os-bubble-in {
@@ -267,8 +267,8 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--aki-color-neon-cyan, #00e5ff);
-    box-shadow: 0 0 8px rgba(0, 229, 255, 0.8);
+    background: var(--aki-color-neon-cyan, #A259FF);
+    
     animation: os-typing-dot 1s ease-in-out infinite;
 }
 .os-chat-bubble.typing .dot:nth-child(2) { animation-delay: 0.15s; }
@@ -292,7 +292,7 @@
 
 .os-chat-bubble .os-li-num,
 .os-chat-bubble .os-li-bullet {
-    color: var(--aki-color-neon-cyan, #00e5ff);
+    color: var(--aki-color-neon-cyan, #A259FF);
     font-weight: 700;
 }
 
@@ -301,8 +301,8 @@
     margin: 8px 0;
     padding: 10px 12px;
     border-radius: 8px;
-    background: rgba(0, 8, 16, 0.65);
-    border: 1px solid rgba(0, 200, 255, 0.18);
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
     font-family: var(--aki-font-mono, Consolas, monospace);
     font-size: 12px;
     color: #b8f4ff;
@@ -313,11 +313,679 @@
 .os-chat-bubble .os-inline-code {
     padding: 1px 6px;
     border-radius: 5px;
-    background: rgba(0, 200, 255, 0.12);
-    border: 1px solid rgba(0, 200, 255, 0.2);
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
     font-family: var(--aki-font-mono, Consolas, monospace);
     font-size: 12px;
     color: #a8ecff;
+}
+
+/* --- Settings drawer ----------------------------------------------------- */
+
+.os-settings-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 290;
+    background: var(--aki-color-bg-surface-base);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.os-settings-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.os-settings-drawer {
+    position: fixed;
+    top: 0;
+    right: -380px;
+    width: min(360px, 92vw);
+    height: 100vh;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    background: var(--aki-color-bg-surface-base);
+    border-left: 1px solid var(--aki-border-subtle);
+    
+    
+    -webkit-
+    transition: right 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.os-settings-drawer.open {
+    right: 0;
+}
+
+.os-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--aki-border-subtle);
+    font-family: var(--aki-font-hud, monospace);
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--aki-color-neon-cyan, #A259FF);
+}
+
+.os-settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 18px 18px;
+}
+
+.os-setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--aki-border-subtle);
+}
+
+.os-setting-name {
+    font-size: 13.5px;
+    color: #e6f7ff;
+    margin-bottom: 2px;
+}
+
+.os-setting-desc {
+    font-size: 11.5px;
+    color: #13131A;
+}
+
+.os-switch {
+    position: relative;
+    width: 46px;
+    height: 24px;
+    flex-shrink: 0;
+}
+.os-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.os-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    cursor: pointer;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+.os-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #cfeeff;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.os-switch input:checked + .os-slider {
+    background: var(--aki-color-bg-surface-base);
+    
+}
+.os-switch input:checked + .os-slider::before {
+    transform: translateX(21px);
+    background: #ffffff;
+}
+
+.os-select {
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 8px;
+    color: #dff6ff;
+    padding: 7px 10px;
+    font-size: 12px;
+    max-width: 170px;
+    outline: none;
+    cursor: pointer;
+}
+.os-select:focus {
+    border-color: #13131A;
+}
+.os-select option {
+    background: #06121f;
+    color: #dff6ff;
+}
+
+.os-status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.os-status-badge.on {
+    color: #7dffb9;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+}
+.os-status-badge.off {
+    color: #ffb37d;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+}
+
+.os-settings-footer {
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 1px solid var(--aki-border-subtle);
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    color: #13131A;
+    text-align: center;
+}
+
+/* --- Copy button on AI replies ------------------------------------------ */
+
+.os-chat-bubble.has-copy {
+    position: relative;
+    padding-right: 34px;
+}
+
+.os-copy-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid var(--aki-border-subtle);
+    background: var(--aki-color-bg-surface-base);
+    color: #13131A;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.os-chat-bubble:hover .os-copy-btn {
+    opacity: 1;
+}
+
+.os-copy-btn:hover {
+    background: var(--aki-color-bg-surface-base);
+    color: #ffffff;
+}
+
+/* --- Add book button ----------------------------------------------------- */
+
+.os-add-book {
+    width: 100%;
+    margin-top: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px dashed #13131A;
+    background: var(--aki-color-bg-surface-base);
+    color: #13131A;
+    font-family: var(--aki-font-hud, monospace);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.os-add-book:hover {
+    background: var(--aki-color-bg-surface-base);
+    border-color: #13131A;
+    
+}
+
+/* --- Knowledge Library window (This-PC style) --------------------------- */
+
+.os-library-window {
+    position: fixed;
+    inset: 26px;
+    z-index: 250;
+    display: none;
+    flex-direction: column;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 14px;
+    
+    
+    -webkit-
+    overflow: hidden;
+}
+
+.os-library-window.open {
+    display: flex;
+    animation: os-panel-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.os-library-window.maximized {
+    inset: 0;
+    border-radius: 0;
+}
+
+.os-lib-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--aki-color-bg-surface-base);
+    border-bottom: 1px solid var(--aki-border-subtle);
+    flex-shrink: 0;
+}
+
+.os-lib-title {
+    font-family: var(--aki-font-hud, monospace);
+    font-size: 11.5px;
+    letter-spacing: 2px;
+    color: var(--aki-color-neon-cyan, #A259FF);
+}
+
+.os-lib-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.os-lib-controls button {
+    width: 30px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--aki-border-subtle);
+    background: var(--aki-color-bg-surface-base);
+    color: #cfeeff;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.os-lib-controls button:hover {
+    background: var(--aki-color-bg-surface-base);
+}
+.os-lib-controls button.close:hover {
+    background: var(--aki-color-bg-surface-base);
+    color: #ffd7dd;
+}
+
+.os-lib-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+    overflow-y: auto;
+}
+
+/* --- Add book button ----------------------------------------------------- */
+
+.os-lib-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    justify-content: flex-end;
+}
+
+.os-lib-refresh {
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--aki-border-subtle);
+    background: var(--aki-color-bg-surface-base);
+    color: #13131A;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.os-lib-refresh:hover {
+    background: var(--aki-color-bg-surface-base);
+}
+
+.os-lib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+}
+
+/* Square "+" tile — like "New Folder" in Windows */
+.os-lib-add-tile {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 12px;
+    border: 2px dashed #13131A;
+    background: var(--aki-color-bg-surface-base);
+    color: #13131A;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.os-lib-add-tile:hover {
+    background: var(--aki-color-bg-surface-base);
+    border-color: #13131A;
+    transform: translateY(-3px);
+}
+.os-lib-add-tile .plus {
+    font-size: 42px;
+    line-height: 1;
+    color: var(--aki-color-neon-cyan, #A259FF);
+    text-shadow: 0 0 18px #13131A;
+}
+
+/* Folder-style book cards */
+.os-lib-card {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.os-lib-card:hover {
+    transform: translateY(-3px);
+    border-color: #13131A;
+    
+}
+
+.os-lib-card .os-lib-card-icon {
+    font-size: 52px;
+    line-height: 1;
+    filter: drop-shadow(0 4px 10px #13131A);
+}
+
+.os-lib-card .os-lib-card-title {
+    font-size: 12.5px;
+    color: #e6f7ff;
+    text-align: center;
+    word-break: break-word;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.os-lib-card .os-lib-card-meta {
+    font-size: 10.5px;
+    color: #13131A;
+}
+
+.os-lib-empty {
+    margin-top: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #13131A;
+    font-size: 13px;
+}
+.os-lib-empty.hidden {
+    display: none;
+}
+
+/* --- Mic: red slash when user turns always-on listening OFF ------------- */
+
+.aki-cmd-voice {
+    position: relative;
+    overflow: hidden;
+}
+
+.aki-cmd-voice.mic-off {
+    color: #ff6b7a;
+}
+
+.aki-cmd-voice.mic-off::after {
+    content: '';
+    position: absolute;
+    left: 15%;
+    top: 48%;
+    width: 70%;
+    height: 2.5px;
+    background: #ff4d5e;
+    border-radius: 2px;
+    transform: rotate(-45deg);
+    
+}
+
+/* --- Dev Agent: instruction bar + viewer --------------------------------- */
+
+.os-textarea,
+.os-input {
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 12px;
+    color: #e6f7ff;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    outline: none;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.os-textarea:focus,
+.os-input:focus {
+    border-color: #13131A;
+    
+}
+
+.os-textarea::placeholder,
+.os-input::placeholder {
+    color: #13131A;
+}
+
+.os-dev-instruction {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    margin-bottom: 16px;
+}
+
+.os-dev-instruction .os-textarea {
+    flex: 1;
+}
+
+.os-dev-create {
+    padding: 0 26px;
+    border-radius: 10px;
+    border: 1px solid var(--aki-border-subtle);
+    background: var(--aki-color-bg-surface-base);
+    color: #b8ffd9;
+    font-family: var(--aki-font-hud, monospace);
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.os-dev-create:hover {
+    background: var(--aki-color-bg-surface-base);
+    
+}
+.os-dev-create:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+/* Square project tiles (desktop-icon style) */
+.os-square-tile {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 14px;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.os-square-tile:hover {
+    transform: translateY(-3px);
+    border-color: #13131A;
+    
+}
+.os-square-tile .tile-icon {
+    font-size: 44px;
+    line-height: 1;
+}
+.os-square-tile .tile-name {
+    font-size: 12.5px;
+    color: #e6f7ff;
+    text-align: center;
+    word-break: break-word;
+    max-width: 100%;
+}
+.os-square-tile .tile-meta {
+    font-size: 10.5px;
+    color: #13131A;
+}
+
+/* AKI / PC choice popup */
+.os-choice-popup {
+    position: fixed;
+    z-index: 400;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    
+    min-width: 220px;
+}
+.os-choice-title {
+    font-size: 12px;
+    color: var(--aki-color-neon-cyan, #A259FF);
+    margin-bottom: 4px;
+    word-break: break-all;
+}
+.os-choice-popup button {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--aki-border-subtle);
+    background: var(--aki-color-bg-surface-base);
+    color: #dff4ff;
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.os-choice-popup button:hover {
+    background: var(--aki-color-bg-surface-base);
+}
+
+/* AKI-internal project viewer */
+.os-dev-viewer {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    flex-direction: column;
+    background: var(--aki-color-bg-surface-base);
+}
+.os-dev-viewer.open {
+    display: flex;
+}
+.os-dev-viewer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--aki-border-subtle);
+    color: var(--aki-color-neon-cyan, #A259FF);
+    font-family: var(--aki-font-hud, monospace);
+    font-size: 11.5px;
+    letter-spacing: 2px;
+}
+.os-dev-viewer-body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+.os-dev-filelist {
+    width: 240px;
+    border-right: 1px solid var(--aki-border-subtle);
+    overflow-y: auto;
+    padding: 10px;
+}
+.os-dev-fileitem {
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: #cfeaff;
+    font-family: var(--aki-font-mono, Consolas, monospace);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.os-dev-fileitem:hover {
+    background: var(--aki-color-bg-surface-base);
+}
+.os-dev-fileview {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+    color: #b8ecff;
+    font-family: var(--aki-font-mono, Consolas, monospace);
+    font-size: 12px;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+/* --- Cyber Suite --------------------------------------------------------- */
+
+.os-cyber-tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.os-cyber-tool {
+    padding: 13px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--aki-border-subtle);
+    background: var(--aki-color-bg-surface-base);
+    color: #d8f2ff;
+    font-family: var(--aki-font-hud, monospace);
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.os-cyber-tool:hover {
+    background: var(--aki-color-bg-surface-base);
+    
+    transform: translateY(-2px);
+}
+
+.os-cyber-note {
+    font-size: 11px;
+    color: #13131A;
+    margin-bottom: 10px;
+}
+
+.os-cyber-output {
+    flex: 1;
+    min-height: 260px;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    color: #a8f0c8;
+    font-family: var(--aki-font-mono, Consolas, monospace);
+    font-size: 12px;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    margin: 0;
 }
 
 /* --- Reminder toast ----------------------------------------------------- */
@@ -330,11 +998,11 @@
     max-width: 340px;
     padding: 14px 18px;
     border-radius: 14px;
-    background: rgba(4, 18, 32, 0.9);
-    border: 1px solid rgba(0, 229, 255, 0.45);
-    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 200, 255, 0.18);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    
+    
+    -webkit-
     opacity: 0;
     transform: translateX(30px);
     transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -350,7 +1018,7 @@
     font-family: var(--aki-font-hud, monospace);
     font-size: 11px;
     letter-spacing: 1.5px;
-    color: var(--aki-color-neon-cyan, #00e5ff);
+    color: var(--aki-color-neon-cyan, #A259FF);
     margin-bottom: 6px;
 }
 
@@ -363,8 +1031,8 @@
 /* --- Command bar focus feedback ------------------------------------------ */
 
 .aki-command-bar:focus-within {
-    border-color: rgba(0, 229, 255, 0.65);
-    box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.35), 0 0 24px rgba(0, 191, 255, 0.25);
+    border-color: #13131A;
+    
     transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -382,18 +1050,8 @@ body::after {
     z-index: 999;
     pointer-events: none;
     background:
-        repeating-linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, 0.014) 0px,
-            rgba(255, 255, 255, 0.014) 1px,
-            transparent 1px,
-            transparent 3px
-        ),
-        radial-gradient(
-            ellipse at center,
-            transparent 55%,
-            rgba(0, 4, 10, 0.55) 100%
-        );
+        repeating-none,
+        none;
 }
 
 /* Slow horizontal light sweep across the whole interface */
@@ -406,12 +1064,7 @@ body::before {
     height: 140%;
     z-index: 998;
     pointer-events: none;
-    background: linear-gradient(
-        to right,
-        transparent,
-        rgba(120, 220, 255, 0.028),
-        transparent
-    );
+    background: none;
     transform: rotate(8deg) translateX(-150vw);
     /* transform-only animation: GPU-composited, zero layout repaints. */
     animation: aki-screen-sweep 11s linear infinite;
@@ -442,33 +1095,30 @@ body::before {
 .aki-glass-panel::before {
     top: -1px;
     left: -1px;
-    border-top: 2px solid rgba(0, 229, 255, 0.75);
-    border-left: 2px solid rgba(0, 229, 255, 0.75);
+    border-top: 1px solid var(--aki-border-subtle);
+    border-left: 1px solid var(--aki-border-subtle);
     border-top-left-radius: 4px;
 }
 
 .aki-glass-panel::after {
     bottom: -1px;
     right: -1px;
-    border-bottom: 2px solid rgba(0, 229, 255, 0.75);
-    border-right: 2px solid rgba(0, 229, 255, 0.75);
+    border-bottom: 1px solid var(--aki-border-subtle);
+    border-right: 1px solid var(--aki-border-subtle);
     border-bottom-right-radius: 4px;
 }
 
 .aki-glass-panel:hover {
-    background: rgba(6, 18, 36, 0.42);
-    border-top-color: rgba(0, 240, 255, 0.85);
-    box-shadow:
-        0 14px 38px rgba(0, 0, 0, 0.65),
-        0 0 22px rgba(0, 191, 255, 0.12),
-        inset 0 1px 15px rgba(0, 240, 255, 0.08);
+    background: var(--aki-color-bg-surface-base);
+    border-top-color: #13131A;
+    
     transform: translateY(-2px);
 }
 
 .aki-glass-panel:hover::before,
 .aki-glass-panel:hover::after {
     border-color: #4defff;
-    filter: drop-shadow(0 0 4px rgba(77, 239, 255, 0.7));
+    filter: drop-shadow(0 0 4px #13131A);
 }
 
 /* --- Panel headers: pulsing status LED ---------------------------------- */
@@ -485,11 +1135,7 @@ body::before {
     bottom: 0;
     height: 1px;
     width: 100%;
-    background: linear-gradient(
-        to right,
-        rgba(0, 229, 255, 0.55),
-        transparent
-    );
+    background: none;
 }
 
 .aki-events-list li {
@@ -498,7 +1144,7 @@ body::before {
 }
 
 .aki-events-list li:hover {
-    background: rgba(0, 191, 255, 0.08);
+    background: var(--aki-color-bg-surface-base);
     padding-left: 6px;
 }
 
@@ -513,9 +1159,7 @@ body::before {
 
 .aki-dock-item:hover {
     transform: translateY(-8px) scale(1.22) !important;
-    box-shadow:
-        0 10px 24px rgba(0, 0, 0, 0.5),
-        0 0 18px rgba(0, 229, 255, 0.45) !important;
+    
 }
 
 /* --- Reactor: depth glow ------------------------------------------------ */
@@ -528,11 +1172,7 @@ body::before {
     width: 300px;
     height: 56px;
     transform: translateX(-50%);
-    background: radial-gradient(
-        ellipse at center,
-        rgba(0, 200, 255, 0.20),
-        transparent 70%
-    );
+    background: none;
     filter: blur(6px);
     z-index: 0;
     pointer-events: none;

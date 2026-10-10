@@ -9,7 +9,7 @@ from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QColor, QMouseEvent
 from PySide6.QtWidgets import QGraphicsDropShadowEffect, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 class WindowEffects:
@@ -20,7 +20,7 @@ class WindowEffects:
     theming are injected; no global state is kept.
     """
 
-    def __init__(self, target: QWidget, theme: BlueTheme) -> None:
+    def __init__(self, target: QWidget, theme: AkiTheme) -> None:
         """Initialize the window effects helper.
 
         Args:

@@ -46,6 +46,13 @@ _ACTION_VERB: Final[str] = (
 
 _SITE_NAMES: Final[str] = r"youtube|google|github|gmail|whatsapp"
 
+# Bare site mentions ("yt par jaker videos laya kar") — anyone typing
+# a site alias wants that site opened; no verb required.
+_BARE_SITE_PATTERN: Final[re.Pattern] = re.compile(
+    r"\b(?:yt|youtube)\b",
+    re.IGNORECASE,
+)
+
 _WEBSITE_PATTERNS: Final[tuple[re.Pattern, ...]] = (
     re.compile(
         rf"\b{_ACTION_VERB}\s+(?:the\s+)?(?P<site>{_SITE_NAMES})\b",
@@ -78,6 +85,36 @@ _SYSTEM_INFO_PATTERN: Final[re.Pattern] = re.compile(
     r"\b(?:system\s*(?:status|info(?:rmation)?|health)"
     r"|time\s*kya\s*(?:hua|hua hai)|kit(?:na|ne)\s*(?:baj(?:e|a)|hue)"
     r"|what(?:'s| is)\s+the\s+time)\b",
+    re.IGNORECASE,
+)
+
+# --- PC control v2 -------------------------------------------------------
+
+_VOLUME_PATTERN: Final[re.Pattern] = re.compile(
+    r"\b(?:volume|awaaz|awaz|sound)\s*(?:full|100|max)?\s*"
+    r"(?:up|barhao|barha|badhao|kam|karo|down|mute|kar(?:do|do))?|"
+    r"\b(?:mute|unmute)\s*(?:karo|kar)?\b",
+    re.IGNORECASE,
+)
+
+_MEDIA_PATTERN: Final[re.Pattern] = re.compile(
+    r"\b(?:play|pause|play\/pause|next(?:\s*(?:song|track|gaana|gana))?|"
+    r"previous(?:\s*(?:song|track|gaana|gana))?|agla(?:\s*gaana)?|"
+    r"pichla(?:\s*gaana)?|gaana\s*(?:chala|lagao)|music\s*(?:chala|pause|rok))\b",
+    re.IGNORECASE,
+)
+
+_PROCESSES_PATTERN: Final[re.Pattern] = re.compile(
+    r"\b(?:processes?|apps?|programs?)\s*(?:batao?|dikhao|list)\b"
+    r"|\bkaun(?:si|se)\s+(?:apps?|programs?|process)\s+chal",
+    re.IGNORECASE,
+)
+
+_KILL_PATTERN: Final[re.Pattern] = re.compile(
+    r"\b(?:kill|khatam)\s*(?:karo|kar)?\s+(?:process|app|program)?\s*(?P<target>[a-zA-Z0-9._ -]{2,40})\b"
+    r"|\b(?P<target2>[a-zA-Z0-9._]{2,30})\s+(?:process|app)\s+(?:kill|band)\s*(?:karo|kar)?\b"
+    r"|\b(?P<target3>[a-zA-Z0-9._]{2,30})\s+(?:kill|khatam)\b"
+    r"|\b(?P<target4>[a-zA-Z0-9._]{2,30})\s+band\s*(?:karo|kar)?\b",
     re.IGNORECASE,
 )
 
@@ -125,6 +162,22 @@ _EXPLICIT_ACTIONS: Final[tuple[tuple[re.Pattern, str], ...]] = (
             re.IGNORECASE,
         ),
         "list_reminders",
+    ),
+    (
+        re.compile(
+            r"\b(?:book|kitaab|pdf)\s*(?:add|lagao|laga|dao|do|dalo|import)\b"
+            r"|\b(?:add|import)\s+(?:a\s+)?(?:book|pdf)\b",
+            re.IGNORECASE,
+        ),
+        "add_book",
+    ),
+    (
+        re.compile(
+            r"\b(?:mere\s+)?(?:books?|kitaabein|library)\s+"
+            r"(?:batao?|dikhao|list|kaunsi|kis|related|topics?)\b",
+            re.IGNORECASE,
+        ),
+        "list_books",
     ),
 )
 
@@ -176,6 +229,22 @@ class IntentEngine:
                 utterance=cleaned,
             )
 
+        volume = self._match_volume(cleaned)
+        if volume is not None:
+            return volume
+
+        media = self._match_media(cleaned)
+        if media is not None:
+            return media
+
+        processes = self._match_processes(cleaned)
+        if processes is not None:
+            return processes
+
+        kill = self._match_kill(cleaned)
+        if kill is not None:
+            return kill
+
         if _SYSTEM_INFO_PATTERN.search(cleaned):
             return IntentDecision(
                 action="get_system_info",
@@ -200,8 +269,104 @@ class IntentEngine:
 
         return None
 
+    def _match_volume(self, text: str) -> IntentDecision | None:
+        """Match volume up/down/mute/full commands."""
+
+        if not _VOLUME_PATTERN.search(text):
+            return None
+
+        lowered = text.lower()
+
+        if "mute" in lowered:
+            return IntentDecision(
+                action="volume_step",
+                parameters={"direction": "mute"},
+                utterance=text,
+            )
+
+        if "full" in lowered or "100" in lowered or "max" in lowered:
+            return IntentDecision(
+                action="set_volume",
+                parameters={"level": "100"},
+                utterance=text,
+            )
+
+        direction = (
+            "down"
+            if any(word in lowered for word in ("kam", "down", "less"))
+            else "up"
+        )
+
+        return IntentDecision(
+            action="volume_step",
+            parameters={"direction": direction},
+            utterance=text,
+        )
+
+    def _match_media(self, text: str) -> IntentDecision | None:
+        """Match play/pause/next/previous media commands."""
+
+        found = _MEDIA_PATTERN.search(text)
+
+        if not found:
+            return None
+
+        phrase = found.group(0).lower()
+
+        if "next" in phrase or "agla" in phrase:
+            action = "next"
+        elif "previous" in phrase or "pichla" in phrase:
+            action = "previous"
+        elif "pause" in phrase or "rok" in phrase:
+            action = "pause"
+        else:
+            action = "play"
+
+        return IntentDecision(
+            action="media_control",
+            parameters={"action": action},
+            utterance=text,
+        )
+
+    def _match_processes(self, text: str) -> IntentDecision | None:
+        """Match 'processes batao' style read-only queries."""
+
+        if _PROCESSES_PATTERN.search(text):
+            return IntentDecision(
+                action="list_processes",
+                utterance=text,
+            )
+
+        return None
+
+    def _match_kill(self, text: str) -> IntentDecision | None:
+        """Match 'notepad kill karo' style requests (confirmation-gated)."""
+
+        found = _KILL_PATTERN.search(text)
+
+        if not found:
+            return None
+
+        groups = found.groupdict()
+        target = next(
+            (value for value in groups.values() if value),
+            "",
+        ).strip()
+
+        # Avoid hijacking generic sentences with no real target.
+        filler = {"karo", "kar", "process", "app", "program", "band", "kill"}
+
+        if not target or target.lower() in filler:
+            return None
+
+        return IntentDecision(
+            action="kill_process",
+            parameters={"target": target},
+            utterance=text,
+        )
+
     def _match_website(self, text: str) -> IntentDecision | None:
-        """Match 'open youtube' / 'youtube kholo' style commands."""
+        """Match 'open youtube' / 'youtube kholo' / bare 'yt ...' commands."""
 
         for pattern in _WEBSITE_PATTERNS:
             found = pattern.search(text)
@@ -209,12 +374,23 @@ class IntentEngine:
             if found:
                 site = (found.group("site") or "").lower()
 
+                if site == "yt":
+                    site = "youtube"
+
                 if site:
                     return IntentDecision(
                         action="open_website",
                         parameters={"site": site},
                         utterance=text,
                     )
+
+        # Bare alias: "yt" in any phrasing means "open YouTube".
+        if _BARE_SITE_PATTERN.search(text):
+            return IntentDecision(
+                action="open_website",
+                parameters={"site": "youtube"},
+                utterance=text,
+            )
 
         return None
 

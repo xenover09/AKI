@@ -8,7 +8,7 @@ from typing import List, Optional
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QDialog, QListWidget, QListWidgetItem, QVBoxLayout, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 from desktop.widgets.search_bar import SearchBar
 
 
@@ -29,7 +29,7 @@ class CommandPalette(QDialog):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         commands: Optional[List[CommandItem]] = None,
         parent: Optional[QWidget] = None,
     ) -> None:

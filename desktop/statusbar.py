@@ -7,14 +7,14 @@ from typing import Optional
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 from desktop.widgets.status_indicator import StatusIndicator, StatusState
 
 
 class StatusBar(QWidget):
     """A themed status bar with a status indicator, message and trailing info."""
 
-    def __init__(self, theme: BlueTheme, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, theme: AkiTheme, parent: Optional[QWidget] = None) -> None:
         """Initialize the status bar.
 
         Args:

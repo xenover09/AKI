@@ -7,7 +7,7 @@ from typing import Optional
 
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 @unique
@@ -26,7 +26,7 @@ class StatusIndicator(QWidget):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         state: StatusState = StatusState.OFFLINE,
         label: Optional[str] = None,
         parent: Optional[QWidget] = None,

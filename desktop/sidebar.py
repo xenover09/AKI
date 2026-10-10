@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 _ANIMATION_DURATION_MS: int = 180
 _GLOW_BLUR_IDLE: float = 0.0
@@ -40,7 +40,7 @@ class SidebarButton(QPushButton):
         page_id: str,
         icon_name: str,
         label: str,
-        theme: BlueTheme,
+        theme: AkiTheme,
         parent: QWidget | None = None,
     ) -> None:
         """
@@ -55,7 +55,7 @@ class SidebarButton(QPushButton):
         """
         super().__init__(parent)
         self._page_id: str = page_id
-        self._theme: BlueTheme = theme
+        self._theme: AkiTheme = theme
         self._glow_blur: float = _GLOW_BLUR_IDLE
 
         self.setObjectName("sidebarItem")
@@ -154,7 +154,7 @@ class Sidebar(QWidget):
         ("plugins", "fa5s.puzzle-piece", "Plugins"),
     )
 
-    def __init__(self, theme: BlueTheme, parent: QWidget | None = None) -> None:
+    def __init__(self, theme: AkiTheme, parent: QWidget | None = None) -> None:
         """
         Initialize the sidebar.
 
@@ -163,7 +163,7 @@ class Sidebar(QWidget):
             parent: Optional parent widget.
         """
         super().__init__(parent)
-        self._theme: BlueTheme = theme
+        self._theme: AkiTheme = theme
         self._button_group: QButtonGroup = QButtonGroup(self)
         self._button_group.setExclusive(True)
 

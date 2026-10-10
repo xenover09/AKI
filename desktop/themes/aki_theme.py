@@ -1,6 +1,6 @@
 """Blue neon glassmorphism theme for the AKI desktop application.
 
-This module defines :class:`BlueTheme`, the single source of truth for
+This module defines :class:`AkiTheme`, the single source of truth for
 every design token (colors, spacing, radii, typography, animation
 timing, breakpoints) used across the AKI desktop shell, and the QSS
 stylesheet builders derived from those tokens. Widgets never hard-code
@@ -10,7 +10,7 @@ theme implementation.
 
 Typical usage example:
 
-    theme = BlueTheme()
+    theme = AkiTheme()
     window.setStyleSheet(theme.global_stylesheet())
     sidebar.setStyleSheet(theme.sidebar_stylesheet())
 """
@@ -21,7 +21,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class BlueTheme:
+class AkiTheme:
     """Design token catalog and QSS stylesheet factory for AKI.
 
     All tokens are declared as frozen dataclass fields with sensible
@@ -78,9 +78,9 @@ class BlueTheme:
     # ------------------------------------------------------------------
     # Colors
     # ------------------------------------------------------------------
-    PRIMARY: str = "#2E7CFF"
-    SECONDARY: str = "#7C4DFF"
-    ACCENT: str = "#00E5FF"
+    PRIMARY: str = "#A259FF"
+    SECONDARY: str = "#A259FF"
+    ACCENT: str = "#A259FF"
     SUCCESS: str = "#2ED573"
     WARNING: str = "#FFB020"
     ERROR: str = "#FF4D4F"
@@ -88,30 +88,30 @@ class BlueTheme:
     # ------------------------------------------------------------------
     # Backgrounds
     # ------------------------------------------------------------------
-    SURFACE_BASE: str = "#0B0E17"
-    SURFACE_GLASS: str = "rgba(24, 30, 48, 0.62)"
-    SURFACE_CARD: str = "#141a29"
+    SURFACE_BASE: str = "#0B0B10"
+    SURFACE_GLASS: str = "#13131A"
+    SURFACE_CARD: str = "#13131A"
 
     # ------------------------------------------------------------------
     # Text
     # ------------------------------------------------------------------
-    TEXT_PRIMARY: str = "#F5F7FF"
-    TEXT_SECONDARY: str = "#A9B3D0"
-    TEXT_MUTED: str = "#6B7591"
+    TEXT_PRIMARY: str = "#ECECF1"
+    TEXT_SECONDARY: str = "#9A9AA5"
+    TEXT_MUTED: str = "#9A9AA5"
 
     # ------------------------------------------------------------------
     # Borders
     # ------------------------------------------------------------------
-    BORDER_LIGHT: str = "rgba(255, 255, 255, 0.08)"
-    BORDER_ACCENT: str = "rgba(46, 124, 255, 0.55)"
+    BORDER_LIGHT: str = "#26262E"
+    BORDER_ACCENT: str = "#A259FF"
 
     # ------------------------------------------------------------------
     # Radius
     # ------------------------------------------------------------------
     RADIUS_SM: int = 6
-    RADIUS_MD: int = 10
-    RADIUS_LG: int = 16
-    RADIUS_XL: int = 24
+    RADIUS_MD: int = 6
+    RADIUS_LG: int = 8
+    RADIUS_XL: int = 8
 
     # ------------------------------------------------------------------
     # Spacing
@@ -173,26 +173,7 @@ class BlueTheme:
     # ------------------------------------------------------------------
 
     def _rgba(self, hex_color: str, alpha: float) -> str:
-        """Convert a ``#RRGGBB`` hex color into an ``rgba()`` QSS string.
-
-        Args:
-            hex_color: Color in ``#RRGGBB`` hex notation.
-            alpha: Opacity in the ``[0.0, 1.0]`` range.
-
-        Returns:
-            The color formatted as a QSS ``rgba(r, g, b, a)`` string.
-
-        Raises:
-            ValueError: If ``hex_color`` is not a well-formed 6-digit hex
-                color string.
-        """
-        normalized = hex_color.lstrip("#")
-        if len(normalized) != 6:
-            raise ValueError(f"Expected a 6-digit hex color, got '{hex_color}'.")
-        red = int(normalized[0:2], 16)
-        green = int(normalized[2:4], 16)
-        blue = int(normalized[4:6], 16)
-        return f"rgba({red}, {green}, {blue}, {alpha})"
+        return hex_color
 
     # ------------------------------------------------------------------
     # Stylesheet builders

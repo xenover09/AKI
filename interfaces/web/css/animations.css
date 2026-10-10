@@ -15,11 +15,11 @@
 @keyframes aki-pulse-slow {
     0%, 100% {
         transform: scale(1);
-        box-shadow: 0 0 30px var(--aki-color-neon-cyan);
+        
     }
     50% {
         transform: scale(1.05);
-        box-shadow: 0 0 60px var(--aki-color-neon-cyan-glow);
+        
     }
 }
 

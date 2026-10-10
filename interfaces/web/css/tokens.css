@@ -8,18 +8,18 @@
        1. COLOR PALETTE (2035 Void Obsidian & Neon Quantum Accents)
        ---------------------------------------------------------------------- */
     /* Core Void Surfaces */
-    --aki-color-bg-void: #020611;
-    --aki-color-bg-navy: #061326;
-    --aki-color-bg-surface-base: rgba(6, 19, 38, 0.45);
-    --aki-color-bg-surface-elevated: rgba(6, 19, 38, 0.65);
-    --aki-color-bg-surface-hover: rgba(14, 28, 54, 0.82);
-    --aki-color-bg-input: rgba(5, 12, 24, 0.75);
+    --aki-color-bg-void: #0B0B10;
+    --aki-color-bg-navy: #13131A;
+    --aki-color-bg-surface-base: #13131A;
+    --aki-color-bg-surface-elevated: #13131A;
+    --aki-color-bg-surface-hover: #26262E;
+    --aki-color-bg-input: #0B0B10;
 
     /* Brand & Accent Highlights */
-    --aki-color-neon-cyan: #00F0FF;
-    --aki-color-neon-cyan-glow: rgba(0, 240, 255, 0.35);
-    --aki-color-electric-blue: #0066FF;
-    --aki-color-electric-glow: rgba(0, 102, 255, 0.35);
+    --aki-color-neon-cyan: #A259FF;
+    --aki-color-neon-cyan-glow: transparent;
+    --aki-color-electric-blue: #A259FF;
+    --aki-color-electric-glow: transparent;
 
     /* Status Indicators */
     --aki-color-status-success: #00FF9D;
@@ -30,34 +30,34 @@
     --aki-color-status-danger-glow: rgba(255, 77, 103, 0.35);
 
     /* Text Hierarchy */
-    --aki-color-text-primary: #f0f6fc;
-    --aki-color-text-secondary: #94a3b8;
-    --aki-color-text-muted: #475569;
-    --aki-color-text-accent: #00f0ff;
+    --aki-color-text-primary: #ECECF1;
+    --aki-color-text-secondary: #9A9AA5;
+    --aki-color-text-muted: #9A9AA5;
+    --aki-color-text-accent: #A259FF;
 
     /* Border Tokens */
-    --aki-border-subtle: rgba(255, 255, 255, 0.08);
-    --aki-border-light: rgba(0, 240, 255, 0.20);
-    --aki-border-accent: rgba(0, 240, 255, 0.45);
+    --aki-border-subtle: #26262E;
+    --aki-border-light: #26262E;
+    --aki-border-accent: #A259FF;
 
     /* ----------------------------------------------------------------------
        2. GLASSMORPHISM & BLUR LEVELS
        ---------------------------------------------------------------------- */
-    --aki-blur-sm: blur(8px) saturate(120%);
-    --aki-blur-md: blur(16px) saturate(130%);
-    --aki-blur-lg: blur(20px) saturate(140%);
-    --aki-blur-xl: blur(40px) saturate(150%);
+    --aki-blur-sm: none;
+    --aki-blur-md: none;
+    --aki-blur-lg: none;
+    --aki-blur-xl: none;
 
     /* ----------------------------------------------------------------------
        3. SHADOWS & GLOW HALOS
        ---------------------------------------------------------------------- */
-    --aki-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
-    --aki-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.50);
-    --aki-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.65);
+    --aki-shadow-sm: none;
+    --aki-shadow-md: none;
+    --aki-shadow-lg: none;
     
-    --aki-glow-cyan-sm: 0 0 12px var(--aki-color-neon-cyan-glow);
-    --aki-glow-cyan-md: 0 0 24px var(--aki-color-neon-cyan-glow);
-    --aki-glow-blue-md: 0 0 24px var(--aki-color-electric-glow);
+    --aki-glow-cyan-sm: none;
+    --aki-glow-cyan-md: none;
+    --aki-glow-blue-md: none;
     --aki-glow-success: 0 0 16px var(--aki-color-status-success-glow);
 
     /* ----------------------------------------------------------------------
@@ -66,7 +66,7 @@
     --aki-radius-xs: 2px;
     --aki-radius-sm: 4px;
     --aki-radius-md: 8px;
-    --aki-radius-lg: 12px;
+    --aki-radius-lg: 8px;
     --aki-radius-pill: 9999px;
 
     /* ----------------------------------------------------------------------

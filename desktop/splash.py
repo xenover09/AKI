@@ -4,7 +4,7 @@ This module defines :class:`SplashScreen`, a frameless, translucent,
 glass-panel widget shown while the application initializes. It displays
 the AKI brand, a cycling loading message, an animated progress bar, and
 an animated glow effect around the glass panel. All colors are sourced
-exclusively from :mod:`desktop.theme.BlueTheme` -- no colors are
+exclusively from :mod:`desktop.theme.AkiTheme` -- no colors are
 hardcoded in this module.
 
 The splash screen contains no business logic. It only manages its own
@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 class SplashScreen(QWidget):
@@ -136,16 +136,16 @@ class SplashScreen(QWidget):
         panel_layout.addWidget(self._loading_label)
 
     def _apply_glass_style(self) -> None:
-        """Apply the glass-panel stylesheet using BlueTheme colors only."""
+        """Apply the glass-panel stylesheet using AkiTheme colors only."""
         self._glass_panel.setStyleSheet(
             f"""
             #glassPanel {{
-                background-color: {BlueTheme.SURFACE_GLASS};
-                border: 1px solid {BlueTheme.BORDER_LIGHT};
+                background-color: {AkiTheme.SURFACE_GLASS};
+                border: 1px solid {AkiTheme.BORDER_LIGHT};
                 border-radius: 18px;
             }}
             #splashTitle {{
-                color: {BlueTheme.TEXT_PRIMARY};
+                color: {AkiTheme.TEXT_PRIMARY};
                 font-size: 30px;
                 font-weight: 700;
                 letter-spacing: 4px;
@@ -153,25 +153,25 @@ class SplashScreen(QWidget):
                 border: none;
             }}
             #splashSubtitle {{
-                color: {BlueTheme.TEXT_SECONDARY};
+                color: {AkiTheme.TEXT_SECONDARY};
                 font-size: 12px;
                 font-weight: 400;
                 background: transparent;
                 border: none;
             }}
             #splashLoadingLabel {{
-                color: {BlueTheme.TEXT_SECONDARY};
+                color: {AkiTheme.TEXT_SECONDARY};
                 font-size: 11px;
                 background: transparent;
                 border: none;
             }}
             #splashProgressBar {{
-                background-color: {BlueTheme.SURFACE_CARD};
+                background-color: {AkiTheme.SURFACE_CARD};
                 border: none;
                 border-radius: 3px;
             }}
             #splashProgressBar::chunk {{
-                background-color: {BlueTheme.PRIMARY};
+                background-color: {AkiTheme.PRIMARY};
                 border-radius: 3px;
             }}
             """
@@ -180,7 +180,7 @@ class SplashScreen(QWidget):
     def _setup_glow_effect(self) -> None:
         """Attach an animated drop-shadow glow effect to the glass panel."""
         self._glow_effect = QGraphicsDropShadowEffect(self._glass_panel)
-        self._glow_effect.setColor(QColor(BlueTheme.ACCENT))
+        self._glow_effect.setColor(QColor(AkiTheme.ACCENT))
         self._glow_effect.setOffset(0, 0)
         self._glow_effect.setBlurRadius(self._GLOW_MIN_RADIUS)
         self._glass_panel.setGraphicsEffect(self._glow_effect)

@@ -7,7 +7,7 @@ from typing import Optional
 from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QToolButton, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 class SearchBar(QWidget):
@@ -17,7 +17,7 @@ class SearchBar(QWidget):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         placeholder: str = "Search...",
         debounce_ms: int = 250,
         parent: Optional[QWidget] = None,

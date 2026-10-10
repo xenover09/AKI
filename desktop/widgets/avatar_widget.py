@@ -8,7 +8,7 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPaintEvent, QPixmap
 from PySide6.QtWidgets import QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 from desktop.widgets.status_indicator import StatusState
 
 
@@ -17,7 +17,7 @@ class AvatarWidget(QWidget):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         initials: str = "",
         pixmap: Optional[QPixmap] = None,
         size: Optional[int] = None,

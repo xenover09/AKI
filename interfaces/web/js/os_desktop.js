@@ -17,6 +17,12 @@
     let audioChunks = [];
     let voiceOutputEnabled = true;
     let recordingStartedAt = 0;
+    let micAlwaysOn = false;
+    let micEverEngaged = false;
+    let micStream = null;
+    let silenceTimer = null;
+    let audioContext = null;
+    let speechDetected = false;
 
     // DOM Elements Cache
     const elements = {
@@ -62,13 +68,13 @@
             elements.osClockDate.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
         }
 
-        // Adaptive Greeting for User AETHER
+        // Adaptive Greeting for User SALAAR
         if (elements.greetingTitle) {
-            let greeting = "Good Evening, AETHER";
+            let greeting = "Good Evening, SALAAR";
             if (hoursNum < 12) {
-                greeting = "Good Morning, AETHER";
+                greeting = "Good Morning, SALAAR";
             } else if (hoursNum < 18) {
-                greeting = "Good Afternoon, AETHER";
+                greeting = "Good Afternoon, SALAAR";
             }
             elements.greetingTitle.textContent = greeting;
         }
@@ -323,6 +329,27 @@
 
         bubble.innerHTML = content;
 
+        // Copy button on AI replies.
+        if (sender === "aki") {
+            const copyBtn = document.createElement("button");
+            copyBtn.className = "os-copy-btn";
+            copyBtn.title = "Copy reply";
+            copyBtn.textContent = "⧉";
+            copyBtn.onclick = (e) => {
+                e.stopPropagation();
+                const raw = text || bubble.innerText;
+                if (bridge && typeof bridge.copyToClipboard === "function") {
+                    bridge.copyToClipboard(raw);
+                } else if (navigator.clipboard) {
+                    navigator.clipboard.writeText(raw);
+                }
+                copyBtn.textContent = "✓";
+                setTimeout(() => (copyBtn.textContent = "⧉"), 1200);
+            };
+            bubble.appendChild(copyBtn);
+            bubble.classList.add("has-copy");
+        }
+
         if (pending && pending.parentNode === feed) {
             feed.insertBefore(bubble, pending);
         } else {
@@ -349,48 +376,135 @@
         if (window.AKISound) window.AKISound.playClick();
     }
 
-    // 7. Voice Input (Speech-to-Text)
+    // 7. Voice Input — always-on JARVIS listening
     async function toggleVoice() {
         if (isVoiceListening) {
+            // User clicked to turn the always-on mic OFF.
+            micAlwaysOn = false;
             stopVoiceRecording();
+            updateMicButton();
             return;
         }
+
+        micAlwaysOn = true;
         await startVoiceRecording();
     }
 
     async function startVoiceRecording() {
+        if (isVoiceListening) return;
+
         if (!navigator.mediaDevices || !window.MediaRecorder) {
             deliverReply("Is device par voice input support nahi hai.");
+            micAlwaysOn = false;
+            updateMicButton();
             return;
         }
 
         if (bridge && typeof bridge.transcribeAudio !== "function") {
             deliverReply("Voice input ke liye Groq API key chahiye (.env mein AKI_AI_API_KEY).");
+            micAlwaysOn = false;
+            updateMicButton();
             return;
         }
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data && event.data.size > 0) audioChunks.push(event.data);
-            };
-
-            mediaRecorder.onstop = () => sendRecordingToBridge(stream);
-
-            mediaRecorder.start();
-
-            recordingStartedAt = Date.now();
-            isVoiceListening = true;
-            setOrbState("listening");
-            updateMicButton();
-            setWaveformActive(true);
-            if (window.AKISound) window.AKISound.playVoice();
+            micStream = stream;
+            micEverEngaged = true;
+            beginRecording(stream);
+            startSilenceWatch();
         } catch (error) {
+            micAlwaysOn = false;
+            updateMicButton();
             deliverReply("Microphone access nahi mila. Mic permission check karein.");
+        }
+    }
+
+    function beginRecording(stream) {
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            const hadSpeech = speechDetected;
+            const elapsed = Date.now() - recordingStartedAt;
+            const streamRef = mediaRecorder ? mediaRecorder.stream : micStream;
+
+            if (micAlwaysOn) {
+                // JARVIS mode: instantly re-arm the mic for the next line.
+                setTimeout(() => {
+                    if (micAlwaysOn && !isVoiceListening) {
+                        beginRecording(micStream || streamRef);
+                        startSilenceWatch();
+                    }
+                }, 350);
+            }
+
+            if (!hadSpeech || elapsed < 800) {
+                return; // silence chunk — ignore silently in always-on mode
+            }
+
+            sendRecordingToBridge();
+        };
+
+        mediaRecorder.start();
+        recordingStartedAt = Date.now();
+        speechDetected = false;
+        isVoiceListening = true;
+
+        setOrbState("listening");
+        updateMicButton();
+        setWaveformActive(true);
+    }
+
+    function startSilenceWatch() {
+        if (silenceTimer) clearInterval(silenceTimer);
+
+        try {
+            audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaStreamSource(micStream);
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 512;
+            source.connect(analyser);
+
+            const buffer = new Uint8Array(analyser.frequencyBinCount);
+            let quietTicks = 0;
+
+            silenceTimer = setInterval(() => {
+                if (!isVoiceListening) return;
+
+                analyser.getByteTimeDomainData(buffer);
+
+                let sum = 0;
+                for (let i = 0; i < buffer.length; i++) {
+                    const deviation = buffer[i] - 128;
+                    sum += deviation * deviation;
+                }
+                const rms = Math.sqrt(sum / buffer.length);
+
+                if (rms > 9) {
+                    speechDetected = true;
+                    quietTicks = 0;
+                } else if (speechDetected) {
+                    quietTicks++;
+                    // ~1.4s of silence after speech = end of utterance.
+                    if (quietTicks > 14) {
+                        speechDetected = false;
+                        quietTicks = 0;
+                        stopVoiceRecording();
+                    }
+                }
+            }, 100);
+        } catch (error) {
+            // Analyser unavailable — fall back to max-length recordings.
+            silenceTimer = setInterval(() => {
+                if (isVoiceListening && Date.now() - recordingStartedAt > 9000) {
+                    stopVoiceRecording();
+                }
+            }, 500);
         }
     }
 
@@ -400,10 +514,14 @@
         setWaveformActive(false);
         setOrbState("idle");
 
+        if (silenceTimer) {
+            clearInterval(silenceTimer);
+            silenceTimer = null;
+        }
+
         const elapsed = Date.now() - recordingStartedAt;
 
-        if (elapsed < 800) {
-            // Too short for Whisper to parse — abort cleanly.
+        if (elapsed < 800 && !micAlwaysOn) {
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.onstop = () => releaseStreamTracks(mediaRecorder.stream);
                 mediaRecorder.stop();
@@ -417,6 +535,16 @@
         } else {
             releaseStreamTracks(mediaRecorder && mediaRecorder.stream);
         }
+    }
+
+    function updateMicButton() {
+        if (!elements.btnVoice) return;
+
+        // Red slash = user turned the always-on mic OFF.
+        elements.btnVoice.classList.toggle(
+            "mic-off",
+            !isVoiceListening && micEverEngaged && !micAlwaysOn
+        );
     }
 
     function releaseStreamTracks(stream) {
@@ -436,10 +564,11 @@
         elements.btnVoice.textContent = isVoiceListening ? "⏹" : "🎙";
     }
 
-    async function sendRecordingToBridge(stream) {
-        releaseStreamTracks(stream);
-
-        if (!audioChunks.length) return;
+    async function sendRecordingToBridge() {
+        if (!audioChunks.length) {
+            releaseStreamTracks(micStream);
+            return;
+        }
 
         // Listening indicator while Whisper does its work.
         setOrbState("thinking");
@@ -506,6 +635,91 @@
         }, 8000);
 
         if (window.AKISound) window.AKISound.playNotification();
+    }
+
+    // Settings drawer
+    function initSettingsDrawer() {
+        const drawer = document.getElementById("settingsDrawer");
+        const backdrop = document.getElementById("settingsBackdrop");
+        const btnOpen = document.getElementById("btnSettingsNav");
+        const btnClose = document.getElementById("btnSettingsClose");
+        const voiceToggle = document.getElementById("setVoiceOutput");
+        const voiceSelect = document.getElementById("setTtsVoice");
+        const inputBadge = document.getElementById("setVoiceInputBadge");
+        const providerBadge = document.getElementById("setProviderBadge");
+        const providerDesc = document.getElementById("setProviderDesc");
+
+        if (!drawer || !btnOpen) return;
+
+        function openDrawer() {
+            if (window.AKISound) window.AKISound.playClick();
+            loadSettings();
+            drawer.classList.add("open");
+            backdrop.classList.add("visible");
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove("open");
+            backdrop.classList.remove("visible");
+        }
+
+        btnOpen.onclick = openDrawer;
+        if (btnClose) btnClose.onclick = closeDrawer;
+        if (backdrop) backdrop.onclick = closeDrawer;
+
+        function loadSettings() {
+            if (!bridge || typeof bridge.getSettings !== "function") return;
+
+            bridge.getSettings().then((s) => {
+                if (!s) return;
+
+                if (voiceToggle) voiceToggle.checked = !!s.voice_output;
+
+                if (voiceSelect) {
+                    voiceSelect.innerHTML = "";
+                    (s.available_voices || []).forEach((v) => {
+                        const option = document.createElement("option");
+                        option.value = v;
+                        option.textContent = v.replace("Neural", "").replace(/^(ur|hi)-[A-Z]{2}-/, "");
+                        if (v === s.tts_voice) option.selected = true;
+                        voiceSelect.appendChild(option);
+                    });
+                }
+
+                setBadge(inputBadge, !!s.voice_input);
+                setBadge(providerBadge, !!s.ai_connected);
+
+                if (providerDesc) {
+                    providerDesc.textContent = s.ai_connected
+                        ? `${s.ai_provider} · ${s.ai_model}`
+                        : "Connected nahi — .env check karein";
+                }
+            });
+        }
+
+        function setBadge(el, on) {
+            if (!el) return;
+            el.textContent = on ? "ONLINE" : "OFF";
+            el.className = "os-status-badge " + (on ? "on" : "off");
+        }
+
+        if (voiceToggle) {
+            voiceToggle.onchange = () => {
+                if (bridge && typeof bridge.setVoiceOutputEnabled === "function") {
+                    voiceOutputEnabled = voiceToggle.checked;
+                    bridge.setVoiceOutputEnabled(voiceToggle.checked);
+                }
+            };
+        }
+
+        if (voiceSelect) {
+            voiceSelect.onchange = () => {
+                if (bridge && typeof bridge.setTtsVoice === "function") {
+                    bridge.setTtsVoice(voiceSelect.value);
+                    if (window.AKISound) window.AKISound.playNotification();
+                }
+            };
+        }
     }
 
     // 7. QWebChannel Setup
@@ -621,6 +835,14 @@
         initWebChannel();
         attachSoundEffects();
 
+        // JARVIS mode: always-on mic arms itself after boot (once
+        // permission has been granted at least once by the browser).
+        setTimeout(() => {
+            if (!micEverEngaged) {
+                toggleVoice();
+            }
+        }, 3000);
+
         // Sound Boot Riser
         setTimeout(() => {
             if (window.AKISound) window.AKISound.playBoot();
@@ -642,6 +864,327 @@
 
         const btnChatClear = document.getElementById("btnChatClear");
         if (btnChatClear) btnChatClear.onclick = () => clearConversation();
+
+    // Knowledge library window
+    function initKnowledgePanel() {
+        const window_el = document.getElementById("libraryWindow");
+        const refreshBtn = document.getElementById("btnRefreshBooks");
+        const btnNav = document.getElementById("btnLibraryNav");
+        const btnMin = document.getElementById("btnLibMin");
+        const btnMax = document.getElementById("btnLibMax");
+        const btnClose = document.getElementById("btnLibClose");
+        const emptyState = document.getElementById("libEmpty");
+        const grid = document.getElementById("bookGrid");
+
+        function addBook() {
+            if (!bridge || typeof bridge.addBookFromDialog !== "function") return;
+
+            if (window.AKISound) window.AKISound.playClick();
+
+            bridge.addBookFromDialog().then((result) => {
+                if (result && result.added) {
+                    showReminderToast({
+                        title: "Book Added",
+                        body: `${result.title} — ${result.pages} pages ingested`,
+                    });
+                    refreshBooks();
+                } else if (result && result.error) {
+                    showReminderToast({
+                        title: "Book Failed",
+                        body: result.error,
+                    });
+                }
+            });
+        }
+
+        function refreshBooks() {
+            if (!bridge || typeof bridge.getBooks !== "function") return;
+
+            bridge.getBooks().then((books) => {
+                if (!grid) return;
+
+                grid.innerHTML = "";
+
+                // Square "+" tile first — like New Folder in Windows.
+                const tile = document.createElement("button");
+                tile.className = "os-lib-add-tile";
+                tile.title = "Add a book (PDF/TXT)";
+                tile.innerHTML =
+                    "<span class='plus'>＋</span><span>ADD BOOK</span>";
+                tile.onclick = addBook;
+                grid.appendChild(tile);
+
+                const hasBooks = books && books.length;
+
+                if (emptyState) {
+                    emptyState.classList.toggle("hidden", !!hasBooks);
+                }
+
+                (books || []).forEach((book) => {
+                    const card = document.createElement("div");
+                    card.className = "os-lib-card";
+                    card.title = `${book.title} — ${book.pages} pages`;
+                    const topics = (book.topics || []).slice(0, 3).join(", ");
+                    card.innerHTML =
+                        "<div class='os-lib-card-icon'>📁</div>" +
+                        `<div class='os-lib-card-title'>${book.title}</div>` +
+                        `<div class='os-lib-card-meta'>${book.pages} pages` +
+                        (topics ? ` · ${topics}` : "") +
+                        "</div>";
+                    grid.appendChild(card);
+                });
+            });
+        }
+
+        function openLibrary() {
+            if (window.AKISound) window.AKISound.playClick();
+            window_el.classList.add("open");
+            if (btnNav) btnNav.classList.add("active");
+            refreshBooks();
+        }
+
+        function closeLibrary() {
+            window_el.classList.remove("open");
+            if (btnNav) btnNav.classList.remove("active");
+        }
+
+        if (btnNav) btnNav.onclick = openLibrary;
+        if (btnClose) btnClose.onclick = closeLibrary;
+
+        if (btnMin) {
+            btnMin.onclick = () => {
+                // Minimize collapses back to the desktop view.
+                closeLibrary();
+            };
+        }
+
+        if (btnMax) {
+            btnMax.onclick = () => {
+                window_el.classList.toggle("maximized");
+            };
+        }
+
+        if (refreshBtn) refreshBtn.onclick = refreshBooks;
+    }
+
+    // Generic window helper (open/min/max/close pattern)
+    function initAppWindow(windowId, navId, onOpen) {
+        const win = document.getElementById(windowId);
+        const nav = document.getElementById(navId);
+
+        function open() {
+            if (window.AKISound) window.AKISound.playClick();
+            win.classList.add("open");
+            if (nav) nav.classList.add("active");
+            if (onOpen) onOpen();
+        }
+
+        function close() {
+            win.classList.remove("open");
+            if (nav) nav.classList.remove("active");
+        }
+
+        if (nav) nav.onclick = open;
+        win.querySelector(".close").onclick = close;
+
+        const min = win.querySelector("[id$='Min']");
+        const max = win.querySelector("[id$='Max']");
+
+        if (min) min.onclick = close;
+        if (max) max.onclick = () => win.classList.toggle("maximized");
+
+        return { open: open, close: close, element: win };
+    }
+
+    // Dev Agent window
+    function initDevWindow() {
+        const controller = initAppWindow("devWindow", "btnDevNav", refreshProjects);
+        const grid = document.getElementById("devProjectGrid");
+        const empty = document.getElementById("devEmpty");
+        const viewer = document.getElementById("devViewer");
+        const viewerTitle = document.getElementById("devViewerTitle");
+        const fileList = document.getElementById("devFileList");
+        const fileView = document.getElementById("devFileView");
+        let activeProjectPath = "";
+
+        function refreshProjects() {
+            if (!bridge || typeof bridge.getDevProjects !== "function") return;
+
+            bridge.getDevProjects().then((projects) => {
+                if (!grid) return;
+                grid.innerHTML = "";
+
+                const has = projects && projects.length;
+                if (empty) empty.classList.toggle("hidden", !!has);
+
+                (projects || []).forEach((project) => {
+                    const tile = document.createElement("div");
+                    tile.className = "os-square-tile";
+                    tile.innerHTML =
+                        "<div class='tile-icon'>📂</div>" +
+                        `<div class='tile-name'>${project.name}</div>` +
+                        `<div class='tile-meta'>${project.file_count} files</div>`;
+
+                    tile.onclick = () => showProjectOptions(project);
+                    grid.appendChild(tile);
+                });
+            });
+        }
+
+        function showProjectOptions(project) {
+            // JARVIS-style choice: open inside AKI or on the real PC.
+            const choice = document.createElement("div");
+            choice.className = "os-choice-popup";
+
+            choice.innerHTML =
+                `<div class='os-choice-title'>${project.name}</div>` +
+                "<button data-act='aki'>🤖 AKI mein kholein</button>" +
+                "<button data-act='pc'>💻 PC (Explorer) mein kholein</button>";
+
+            choice.onclick = (e) => {
+                const act = e.target.dataset && e.target.dataset.act;
+                if (!act) return;
+
+                if (act === "pc") {
+                    bridge.openProjectFolder(project.path);
+                } else {
+                    openInAki(project);
+                }
+                choice.remove();
+            };
+
+            document.body.appendChild(choice);
+
+            const rect = grid.getBoundingClientRect();
+            choice.style.left = Math.max(20, rect.left + 40) + "px";
+            choice.style.top = rect.top + 60 + "px";
+
+            setTimeout(() => {
+                document.addEventListener("click", function handler(ev) {
+                    if (!choice.contains(ev.target)) {
+                        choice.remove();
+                        document.removeEventListener("click", handler);
+                    }
+                });
+            }, 10);
+        }
+
+        function openInAki(project) {
+            activeProjectPath = project.path;
+            viewerTitle.textContent = project.name;
+
+            bridge.getProjectFiles(project.path).then((files) => {
+                fileList.innerHTML = "";
+
+                (files || []).forEach((relative) => {
+                    const item = document.createElement("div");
+                    item.className = "os-dev-fileitem";
+                    item.textContent = relative;
+                    item.onclick = () => {
+                        fileView.textContent = "Loading...";
+                        bridge.readProjectFile(project.path, relative).then(
+                            (content) => {
+                                fileView.textContent = content || "[empty]";
+                            }
+                        );
+                    };
+                    fileList.appendChild(item);
+                });
+
+                fileView.textContent = "Select a file...";
+                viewer.classList.add("open");
+            });
+        }
+
+        const viewerClose = document.getElementById("btnDevViewerClose");
+        if (viewerClose) viewerClose.onclick = () => viewer.classList.remove("open");
+
+        const createBtn = document.getElementById("btnDevCreate");
+
+        if (createBtn) {
+            createBtn.onclick = () => {
+                const description = document.getElementById("devDesc").value.trim();
+
+                if (!description) {
+                    showReminderToast({ title: "Dev Agent", body: "Pehle batao kya banana hai!" });
+                    return;
+                }
+
+                if (window.AKISound) window.AKISound.playClick();
+                createBtn.disabled = true;
+                createBtn.textContent = "⏳ BUILDING...";
+
+                setOrbState("thinking");
+
+                bridge.createDevProject("", "", description).then(() => {
+                    createBtn.disabled = false;
+                    createBtn.textContent = "⚡ BUILD";
+                    setTimeout(refreshProjects, 800);
+                });
+            };
+        }
+
+        if (bridge) {
+            setTimeout(refreshProjects, 1500);
+        }
+
+        return controller;
+    }
+
+    // Cyber Suite window
+    function initCyberWindow() {
+        const output = document.getElementById("cyberOutput");
+        const win = document.getElementById("cyberWindow");
+
+        function appendResult(text) {
+            if (!output) return;
+            output.textContent += "\n\n" + text;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function runTool(tool, parameter) {
+            if (!bridge || typeof bridge.runSecurityTool !== "function") return;
+
+            appendResult(`> Running ${tool}...`);
+
+            bridge.runSecurityTool(tool, parameter || "").then((res) => {
+                if (res && res.status && res.status !== "PENDING") {
+                    appendResult(res.response || "");
+                }
+            });
+        }
+
+        document.querySelectorAll(".os-cyber-tool").forEach((btn) => {
+            btn.onclick = () => runTool(btn.dataset.tool);
+        });
+
+        // Mirror tool results from chat into the console panel.
+        setTimeout(() => {
+            if (bridge && typeof bridge.aiResponseReady !== "undefined") {
+                bridge.aiResponseReady.connect((payload) => {
+                    if (
+                        payload &&
+                        payload.action &&
+                        win.classList.contains("open")
+                    ) {
+                        appendResult(payload.response || "");
+                    }
+                });
+            }
+        }, 1000);
+
+        return {};
+    }
+
+    // Settings drawer
+        initSettingsDrawer();
+
+        // Knowledge library panel
+        initKnowledgePanel();
+
+        // Dev Agent + Cyber Suite windows
+        initDevWindow();
+        initCyberWindow();
 
         if (elements.cmdInput) {
             elements.cmdInput.onkeydown = (e) => {

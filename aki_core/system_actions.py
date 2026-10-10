@@ -58,6 +58,32 @@ BUILTIN_ACTIONS: Final[tuple[ActionDefinition, ...]] = (
         category=ActionCategory.INFORMATION,
     ),
     ActionDefinition(
+        name="set_volume",
+        description="Set speaker volume to a 0-100 level.",
+        category=ActionCategory.SYSTEM,
+    ),
+    ActionDefinition(
+        name="volume_step",
+        description="Nudge volume up, down, or toggle mute.",
+        category=ActionCategory.SYSTEM,
+    ),
+    ActionDefinition(
+        name="media_control",
+        description="Play/pause or skip the current media track.",
+        category=ActionCategory.SYSTEM,
+    ),
+    ActionDefinition(
+        name="list_processes",
+        description="List running applications and their resource usage.",
+        category=ActionCategory.INFORMATION,
+    ),
+    ActionDefinition(
+        name="kill_process",
+        description="Force-close a running process by name or pid.",
+        category=ActionCategory.SYSTEM,
+        requires_confirmation=True,
+    ),
+    ActionDefinition(
         name="search_files",
         description="Search files across the user's machine.",
         category=ActionCategory.FILE,
@@ -84,6 +110,11 @@ _ACTION_PERMISSION_LEVELS: Final[dict[str, PermissionLevel]] = {
     "open_website": PermissionLevel.USER_ACTION,
     "take_screenshot": PermissionLevel.READ_ONLY,
     "get_system_info": PermissionLevel.READ_ONLY,
+    "set_volume": PermissionLevel.USER_ACTION,
+    "volume_step": PermissionLevel.USER_ACTION,
+    "media_control": PermissionLevel.USER_ACTION,
+    "list_processes": PermissionLevel.READ_ONLY,
+    "kill_process": PermissionLevel.SYSTEM_ACTION,
 }
 
 
@@ -203,6 +234,163 @@ def _handle_get_system_info() -> dict[str, Any]:
     }
 
 
+# Windows media/volume virtual keys (WScript SendKeys codes).
+_KEY_CODES: Final[dict[str, str]] = {
+    "volume_up": "175",
+    "volume_down": "174",
+    "mute": "173",
+    "play_pause": "179",
+    "next_track": "176",
+    "previous_track": "177",
+}
+
+
+def _send_key(key_name: str) -> None:
+    """Send one fixed virtual-media key via PowerShell."""
+
+    code = _KEY_CODES[key_name]
+    script = (
+        "(New-Object -ComObject WScript.Shell)"
+        f".SendKeys([char]{code})"
+    )
+
+    subprocess.Popen(
+        [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            script,
+        ],
+        creationflags=0x08000000,  # CREATE_NO_WINDOW
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def _handle_set_volume(*, level: int = 50) -> dict[str, int]:
+    """Set absolute volume by stepping toward the target level."""
+
+    target = max(0, min(100, int(level)))
+
+    # Windows has no direct set: approximate with 50 mute-toggling
+    # presses up from zero. Each press = 2%.
+    _send_key("mute")  # ensure known state (unmute at current)
+    presses_up = max(0, target - 0) // 2
+
+    for _ in range(50):
+        _send_key("volume_down")  # floor to zero
+
+    for _ in range(presses_up):
+        _send_key("volume_up")
+
+    return {"volume": presses_up * 2}
+
+
+def _handle_volume_step(*, direction: str = "up") -> dict[str, str]:
+    """Nudge volume or toggle mute."""
+
+    key = {
+        "up": "volume_up",
+        "down": "volume_down",
+        "mute": "mute",
+    }.get(direction.strip().lower())
+
+    if key is None:
+        raise ValueError(
+            f"Unknown volume direction '{direction}'."
+        )
+
+    _send_key(key)
+    return {"direction": direction}
+
+
+def _handle_media_control(*, action: str = "play_pause") -> dict[str, str]:
+    """Control media playback (play/pause/next/previous)."""
+
+    key = {
+        "play": "play_pause",
+        "pause": "play_pause",
+        "play_pause": "play_pause",
+        "next": "next_track",
+        "previous": "previous_track",
+        "agla": "next_track",
+        "pichla": "previous_track",
+    }.get(action.strip().lower())
+
+    if key is None:
+        raise ValueError(
+            f"Unknown media action '{action}'."
+        )
+
+    _send_key(key)
+    return {"action": action}
+
+
+def _handle_list_processes(*, limit: int = 10) -> dict[str, Any]:
+    """List the heaviest running processes."""
+
+    limit = max(1, min(25, int(limit)))
+    processes = []
+
+    for proc in psutil.process_iter(["pid", "name", "memory_info"]):
+        try:
+            info = proc.info
+            memory = info.get("memory_info")
+            processes.append(
+                {
+                    "pid": info["pid"],
+                    "name": info["name"] or "unknown",
+                    "ram_mb": round(
+                        (memory.rss if memory else 0) / (1024 * 1024),
+                        1,
+                    ),
+                }
+            )
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+    processes.sort(key=lambda item: -item["ram_mb"])
+
+    return {"processes": processes[:limit]}
+
+
+def _handle_kill_process(*, target: str = "") -> dict[str, str]:
+    """Force-close a process by pid or (partial) name."""
+
+    cleaned = target.strip()
+
+    if not cleaned:
+        raise ValueError(
+            "Process name ya pid zaroori hai."
+        )
+
+    killed: list[str] = []
+
+    if cleaned.isdigit():
+        proc = psutil.Process(int(cleaned))
+        killed.append(proc.name() or cleaned)
+        proc.kill()
+    else:
+        needle = cleaned.lower()
+
+        for proc in psutil.process_iter(["pid", "name"]):
+            try:
+                name = proc.info["name"] or ""
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+            if needle in name.lower():
+                proc.kill()
+                killed.append(name)
+
+    if not killed:
+        raise FileNotFoundError(
+            f"'{target}' jaisa koi process chal nahi raha."
+        )
+
+    return {"killed": ", ".join(sorted(set(killed)))}
+
+
 # ============================================================
 # Stack assembly
 # ============================================================
@@ -244,6 +432,11 @@ def build_action_system() -> ActionSystem:
     # take_screenshot is intentionally unregistered here: the GUI layer
     # owns real screen capture and registers its own implementation.
     executor.register_handler("get_system_info", _handle_get_system_info)
+    executor.register_handler("set_volume", _handle_set_volume)
+    executor.register_handler("volume_step", _handle_volume_step)
+    executor.register_handler("media_control", _handle_media_control)
+    executor.register_handler("list_processes", _handle_list_processes)
+    executor.register_handler("kill_process", _handle_kill_process)
 
     return ActionSystem(
         registry=registry,

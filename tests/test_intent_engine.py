@@ -35,6 +35,19 @@ class TestWebsiteIntents:
         assert decision is not None
         assert decision.parameters["site"] == "gmail"
 
+    def test_bare_yt_alias(self, engine: IntentEngine) -> None:
+        decision = engine.match("yt par jaker wahan ki videos laya kar")
+
+        assert decision is not None
+        assert decision.action == "open_website"
+        assert decision.parameters["site"] == "youtube"
+
+    def test_yt_short_alias(self, engine: IntentEngine) -> None:
+        decision = engine.match("yt kholo")
+
+        assert decision is not None
+        assert decision.parameters["site"] == "youtube"
+
 
 class TestApplicationIntents:
     """App commands resolve only against known local applications."""

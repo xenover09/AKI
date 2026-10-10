@@ -8,7 +8,7 @@ from PySide6.QtCore import Property, QEasingCurve, QPropertyAnimation, QSize, Qt
 from PySide6.QtGui import QIcon, QPixmap, QTransform
 from PySide6.QtWidgets import QGraphicsOpacityEffect, QLabel, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 class AnimatedIcon(QLabel):
@@ -16,7 +16,7 @@ class AnimatedIcon(QLabel):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         icon: Optional[QIcon] = None,
         size: Optional[int] = None,
         parent: Optional[QWidget] = None,

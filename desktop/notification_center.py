@@ -11,7 +11,7 @@ from uuid import uuid4
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QLabel, QScrollArea, QVBoxLayout, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 from desktop.widgets.glass_button import ButtonVariant, GlassButton
 from desktop.widgets.glass_card import GlassCard
 
@@ -47,7 +47,7 @@ class NotificationCenter(QWidget):
     notification_dismissed = Signal(str)
     cleared = Signal()
 
-    def __init__(self, theme: BlueTheme, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, theme: AkiTheme, parent: Optional[QWidget] = None) -> None:
         """Initialize the notification center.
 
         Args:

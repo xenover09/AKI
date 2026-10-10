@@ -8,7 +8,7 @@ from typing import Optional
 from PySide6.QtCore import QEasingCurve, QObject, QPropertyAnimation, QRect
 from PySide6.QtWidgets import QGraphicsOpacityEffect, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 @unique
@@ -28,7 +28,7 @@ class AnimationController:
     that animation timing stays consistent across the application.
     """
 
-    def __init__(self, theme: BlueTheme) -> None:
+    def __init__(self, theme: AkiTheme) -> None:
         """Initialize the animation controller.
 
         Args:

@@ -22,7 +22,7 @@ from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QWidget
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 
 class TitleBar(QWidget):
@@ -59,7 +59,7 @@ class TitleBar(QWidget):
         self,
         parent: Optional[QWidget] = None,
         title: str = "AKI — Artificial Knowledge Intelligence",
-        theme: Optional[BlueTheme] = None,
+        theme: Optional[AkiTheme] = None,
     ) -> None:
         """Initialize the title bar.
 
@@ -67,10 +67,10 @@ class TitleBar(QWidget):
             parent: Optional parent widget.
             title: Text displayed in the title bar label.
             theme: Theme instance supplying the stylesheet. A new
-                :class:`BlueTheme` is created if not provided.
+                :class:`AkiTheme` is created if not provided.
         """
         super().__init__(parent)
-        self._theme = theme if theme is not None else BlueTheme()
+        self._theme = theme if theme is not None else AkiTheme()
         self._is_maximized: bool = False
         self._drag_offset: Optional[QPoint] = None
 

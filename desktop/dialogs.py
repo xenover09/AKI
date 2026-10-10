@@ -6,7 +6,7 @@ from typing import Optional
 
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout, QWidget, QDialog
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 from desktop.widgets.glass_button import ButtonVariant, GlassButton
 
 
@@ -15,7 +15,7 @@ class GlassDialog(QDialog):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         title: str,
         parent: Optional[QWidget] = None,
     ) -> None:
@@ -85,7 +85,7 @@ class ConfirmDialog(GlassDialog):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         title: str,
         message: str,
         parent: Optional[QWidget] = None,
@@ -119,7 +119,7 @@ class AlertDialog(GlassDialog):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         title: str,
         message: str,
         parent: Optional[QWidget] = None,
@@ -150,7 +150,7 @@ class InputDialog(GlassDialog):
 
     def __init__(
         self,
-        theme: BlueTheme,
+        theme: AkiTheme,
         title: str,
         label: str,
         default_text: str = "",

@@ -261,7 +261,7 @@ class SpeechService:
         return Path(handle.name)
 
     def _preferred_voice(self) -> str:
-        """Resolve the neural voice, honoring an optional env override."""
+        """Resolve the neural voice, honoring an explicit selection."""
 
         if self._neural_voice:
             return self._neural_voice
@@ -274,12 +274,34 @@ class SpeechService:
             self._neural_voice = override
             return override
 
-        for voice in _NEURAL_VOICES:
-            self._neural_voice = voice
-            return voice
-
         self._neural_voice = _NEURAL_VOICES[0]
         return self._neural_voice
+
+    def set_voice(self, voice: str) -> bool:
+        """
+        Select the neural voice by identifier.
+
+        Returns:
+            True when the voice is a known option, False otherwise.
+        """
+
+        if not isinstance(voice, str):
+            return False
+
+        cleaned = voice.strip()
+
+        if cleaned not in _NEURAL_VOICES:
+            return False
+
+        self._neural_voice = cleaned
+        logger.info("TTS voice selected: %s", cleaned)
+
+        return True
+
+    def available_voices(self) -> tuple[str, ...]:
+        """Return the selectable neural voices."""
+
+        return _NEURAL_VOICES
 
     # ============================================================
     # Fallback engine (Windows SAPI)

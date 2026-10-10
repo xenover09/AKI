@@ -4,23 +4,23 @@
 
 /* Level 1: Background Glass (Very transparent) */
 .aki-glass-bg {
-    background: rgba(5, 15, 30, 0.25);
-    backdrop-filter: var(--aki-blur-sm);
-    -webkit-backdrop-filter: var(--aki-blur-sm);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--aki-color-bg-surface-base);
+    
+    -webkit-
+    border: 1px solid var(--aki-border-subtle);
     border-radius: var(--aki-radius-md);
 }
 
 /* Level 2: Normal Panels (Medium transparency) */
 .aki-glass-panel {
-    background: rgba(4, 10, 25, 0.25);
-    backdrop-filter: var(--aki-blur-lg);
-    -webkit-backdrop-filter: var(--aki-blur-lg);
-    border: 1px solid rgba(0, 240, 255, 0.1);
-    border-top: 1px solid rgba(0, 240, 255, 0.6); /* JARVIS/EDITH sharp top edge */
+    background: var(--aki-color-bg-surface-base);
+    
+    -webkit-
+    border: 1px solid var(--aki-border-subtle);
+    border-top: 1px solid var(--aki-border-subtle); /* JARVIS/EDITH sharp top edge */
     border-radius: var(--aki-radius-md);
     padding: var(--aki-space-4) var(--aki-space-5, 20px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 1px 15px rgba(0, 240, 255, 0.05);
+    
     transition: background var(--aki-transition-normal),
                 border-color var(--aki-transition-normal),
                 box-shadow var(--aki-transition-normal),
@@ -31,12 +31,12 @@
 
 /* Level 3: Focused/Active Panels (Brighter, stronger glow) */
 .aki-glass-elevated {
-    background: rgba(14, 28, 54, 0.50);
-    backdrop-filter: var(--aki-blur-xl);
-    -webkit-backdrop-filter: var(--aki-blur-xl);
+    background: var(--aki-color-bg-surface-base);
+    
+    -webkit-
     border: 1px solid var(--aki-border-accent);
     border-radius: var(--aki-radius-lg);
-    box-shadow: var(--aki-shadow-lg), var(--aki-glow-cyan-sm);
+    
 }
 
 /* Interactive Glass Panel (Hover effects) */
@@ -47,7 +47,7 @@
 .aki-glass-interactive:hover {
     background: var(--aki-color-bg-surface-hover);
     border-color: var(--aki-border-accent);
-    box-shadow: var(--aki-shadow-lg), var(--aki-glow-cyan-sm);
+    
 }
 
 .aki-glass-interactive:active {
@@ -58,10 +58,10 @@
 .aki-glass-chip {
     appearance: none;
     outline: none;
-    background: rgba(0, 30, 60, 0.4);
-    backdrop-filter: var(--aki-blur-sm);
-    -webkit-backdrop-filter: var(--aki-blur-sm);
-    border: 1px solid rgba(0, 240, 255, 0.1);
+    background: var(--aki-color-bg-surface-base);
+    
+    -webkit-
+    border: 1px solid var(--aki-border-subtle);
     border-left: 3px solid var(--aki-color-neon-cyan);
     border-radius: 2px;
     padding: var(--aki-space-2) var(--aki-space-3);
@@ -74,11 +74,11 @@
     font-size: 13px;
     letter-spacing: 1px;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    
 }
 
 .aki-glass-chip:hover {
-    background: rgba(0, 240, 255, 0.15);
+    background: var(--aki-color-bg-surface-base);
     border-color: var(--aki-color-neon-cyan);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    
 }

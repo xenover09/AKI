@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from desktop.themes.blue_theme import BlueTheme
+from desktop.themes.aki_theme import AkiTheme
 
 _ANIMATION_DURATION_MS: int = 180
 _GLOW_BLUR_IDLE: float = 0.0
@@ -43,7 +43,7 @@ class GlassCard(QFrame):
         icon_name: str,
         title: str,
         subtitle: str,
-        theme: BlueTheme,
+        theme: AkiTheme,
         clickable: bool = False,
         parent: QWidget | None = None,
     ) -> None:
@@ -61,7 +61,7 @@ class GlassCard(QFrame):
         """
         super().__init__(parent)
         self._card_id: str = card_id
-        self._theme: BlueTheme = theme
+        self._theme: AkiTheme = theme
         self._clickable: bool = clickable
         self._glow_blur: float = _GLOW_BLUR_IDLE
 
@@ -210,7 +210,7 @@ class Dashboard(QWidget):
         ("cybersecurity", "fa5s.shield-alt", "Cyber Security", "View security"),
     )
 
-    def __init__(self, theme: BlueTheme, parent: QWidget | None = None) -> None:
+    def __init__(self, theme: AkiTheme, parent: QWidget | None = None) -> None:
         """
         Initialize the dashboard.
 
@@ -219,7 +219,7 @@ class Dashboard(QWidget):
             parent: Optional parent widget.
         """
         super().__init__(parent)
-        self._theme: BlueTheme = theme
+        self._theme: AkiTheme = theme
 
         self._build_ui()
 
