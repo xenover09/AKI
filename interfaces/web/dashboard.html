@@ -39,6 +39,8 @@
             <!-- Inner Grid (Dashboard Content) -->
             <main class="aki-layout-desktop">
                 
+                <canvas id="aki-particle-canvas"></canvas>
+                
                 <!-- Left Area: Greeting -->
                 <div class="aki-layout-left aki-fade-in">
                     <div class="greeting-box">
@@ -151,7 +153,7 @@
                                 <button class="theme-btn" data-theme="system">System</button>
                             </div>
                         </div>
-                        <div class="os-setting-row" style="border-bottom: none;">
+                        <div class="os-setting-row">
                             <div class="os-setting-info">
                                 <div class="os-setting-name">Accent Color</div>
                             </div>
@@ -160,6 +162,16 @@
                                 <div class="color-dot" style="background: #00FF9D;"></div>
                                 <div class="color-dot" style="background: #0077ff;"></div>
                             </div>
+                        </div>
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Reduce Motion</div>
+                                <div class="os-setting-desc">Disables background particle effects</div>
+                            </div>
+                            <label class="os-switch">
+                                <input type="checkbox" id="setReduceMotion">
+                                <span class="os-slider"></span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -338,7 +350,7 @@
 
     <!-- Scripts -->
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
-    <script src="js/os_particles.js"></script>
     <script src="js/os_desktop.js"></script>
+    <script src="js/particles.js"></script>
 </body>
 </html>

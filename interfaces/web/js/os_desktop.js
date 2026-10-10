@@ -746,11 +746,17 @@
                 const aiBaseUrl = document.getElementById("aiBaseUrl");
                 const aiModel = document.getElementById("aiModel");
                 const aiApiKey = document.getElementById("aiApiKey");
+                const reduceMotionToggle = document.getElementById("setReduceMotion");
                 
                 if (aiPreset) aiPreset.value = s.ai_preset || "ollama";
                 if (aiBaseUrl) aiBaseUrl.value = s.ai_base_url || "";
                 if (aiModel) aiModel.value = s.ai_model || "";
                 if (aiApiKey) aiApiKey.value = s.ai_api_key || "";
+                
+                if (reduceMotionToggle) {
+                    reduceMotionToggle.checked = !!s.reduce_motion;
+                    if (window.akiParticleSwarm) window.akiParticleSwarm.reduceMotion = !!s.reduce_motion;
+                }
             });
 
             if (typeof bridge.getAppearance === "function") {
@@ -787,6 +793,18 @@
                 if (bridge && typeof bridge.setTtsVoice === "function") {
                     bridge.setTtsVoice(voiceSelect.value);
                     if (window.AKISound) window.AKISound.playNotification();
+                }
+            };
+        }
+
+        const reduceMotionToggle = document.getElementById("setReduceMotion");
+        if (reduceMotionToggle) {
+            reduceMotionToggle.onchange = () => {
+                if (bridge && typeof bridge.setReduceMotion === "function") {
+                    bridge.setReduceMotion(reduceMotionToggle.checked);
+                    if (window.akiParticleSwarm) {
+                        window.akiParticleSwarm.reduceMotion = reduceMotionToggle.checked;
+                    }
                 }
             };
         }

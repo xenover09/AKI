@@ -1208,3 +1208,21 @@ body::before {
 .os-btn-secondary:hover {
     background: var(--aki-color-bg-surface-hover);
 }
+
+/* Particle Canvas */
+#aki-particle-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+/* Ensure foreground elements are above canvas */
+.aki-layout-left, .aki-layout-right, .os-chat-panel {
+    position: relative;
+    z-index: 10;
+}

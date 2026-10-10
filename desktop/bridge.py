@@ -343,6 +343,7 @@ class AKIBridge(QObject):
             "ai_preset": self._settings.value("ai_preset", "ollama"),
             "ai_base_url": self._settings.value("ai_base_url", settings_snapshot.ai_base_url if settings_snapshot else ""),
             "ai_api_key": "********" if self._has_api_key() else "",
+            "reduce_motion": self._settings.value("reduce_motion", "false") == "true",
         }
 
     def _has_api_key(self) -> bool:
@@ -356,6 +357,10 @@ class AKIBridge(QObject):
     def setProfileName(self, name: str) -> None:
         if name:
             self._settings.setValue("profile_name", name)
+
+    @Slot(bool)
+    def setReduceMotion(self, state: bool) -> None:
+        self._settings.setValue("reduce_motion", "true" if state else "false")
 
     @Slot(str, str, str, str, result=bool)
     def saveAiSettings(self, preset: str, base_url: str, model: str, api_key: str) -> bool:
