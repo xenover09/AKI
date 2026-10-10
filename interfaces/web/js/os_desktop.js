@@ -741,6 +741,16 @@
                         ? `${s.ai_provider} · ${s.ai_model}`
                         : "Connected nahi — .env check karein";
                 }
+
+                const aiPreset = document.getElementById("aiPreset");
+                const aiBaseUrl = document.getElementById("aiBaseUrl");
+                const aiModel = document.getElementById("aiModel");
+                const aiApiKey = document.getElementById("aiApiKey");
+                
+                if (aiPreset) aiPreset.value = s.ai_preset || "ollama";
+                if (aiBaseUrl) aiBaseUrl.value = s.ai_base_url || "";
+                if (aiModel) aiModel.value = s.ai_model || "";
+                if (aiApiKey) aiApiKey.value = s.ai_api_key || "";
             });
 
             if (typeof bridge.getAppearance === "function") {
@@ -777,6 +787,65 @@
                 if (bridge && typeof bridge.setTtsVoice === "function") {
                     bridge.setTtsVoice(voiceSelect.value);
                     if (window.AKISound) window.AKISound.playNotification();
+                }
+            };
+        }
+
+        const aiPreset = document.getElementById("aiPreset");
+        const aiBaseUrl = document.getElementById("aiBaseUrl");
+        const aiModel = document.getElementById("aiModel");
+        const aiApiKey = document.getElementById("aiApiKey");
+        const btnToggleAiKey = document.getElementById("btnToggleAiKey");
+        const btnTestAiConnection = document.getElementById("btnTestAiConnection");
+        const btnSaveAiSettings = document.getElementById("btnSaveAiSettings");
+        const aiTestResult = document.getElementById("aiTestResult");
+
+        if (aiPreset) {
+            aiPreset.onchange = () => {
+                if (aiPreset.value === "gemini") {
+                    aiBaseUrl.value = "https://generativelanguage.googleapis.com/v1beta/openai/";
+                    aiModel.value = "gemini-3.8-flash";
+                } else if (aiPreset.value === "ollama") {
+                    aiBaseUrl.value = "http://localhost:11434/v1";
+                    aiModel.value = "llama3";
+                }
+            };
+        }
+
+        if (btnToggleAiKey) {
+            btnToggleAiKey.onclick = () => {
+                if (aiApiKey.type === "password") {
+                    aiApiKey.type = "text";
+                } else {
+                    aiApiKey.type = "password";
+                }
+            };
+        }
+
+        if (btnTestAiConnection) {
+            btnTestAiConnection.onclick = () => {
+                if (bridge && typeof bridge.testAiConnection === "function") {
+                    aiTestResult.textContent = "Testing...";
+                    bridge.testAiConnection(aiBaseUrl.value, aiModel.value, aiApiKey.value)
+                        .then(res => {
+                            aiTestResult.textContent = res;
+                        });
+                }
+            };
+        }
+
+        if (btnSaveAiSettings) {
+            btnSaveAiSettings.onclick = () => {
+                if (bridge && typeof bridge.saveAiSettings === "function") {
+                    bridge.saveAiSettings(aiPreset.value, aiBaseUrl.value, aiModel.value, aiApiKey.value)
+                        .then(success => {
+                            if (success) {
+                                aiTestResult.textContent = "✅ Saved and Applied";
+                                setTimeout(() => aiTestResult.textContent = "", 3000);
+                            } else {
+                                aiTestResult.textContent = "❌ Save failed";
+                            }
+                        });
                 }
             };
         }

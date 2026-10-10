@@ -97,6 +97,29 @@ class Settings:
         ai_api_key = os.getenv("AKI_AI_API_KEY", "").strip()
         ai_model = os.getenv("AKI_AI_MODEL", DEFAULT_AI_MODEL).strip()
 
+        # Check PySide6 QSettings for overrides first, to allow UI changes to persist
+        try:
+            from PySide6.QtCore import QSettings
+            qset = QSettings("AKI", "DesktopOS")
+            if qset.contains("ai_base_url"):
+                ai_base_url = qset.value("ai_base_url")
+            if qset.contains("ai_model"):
+                ai_model = qset.value("ai_model")
+            if qset.contains("ai_preset"):
+                ai_provider = "openai_compatible"
+        except Exception:
+            pass
+
+        try:
+            import keyring
+            kr_key = keyring.get_password("AKI", "gemini_api_key")
+            if kr_key:
+                ai_api_key = kr_key
+        except ImportError:
+            pass
+        except Exception:
+            pass
+
         try:
             ai_timeout_seconds = float(
                 os.getenv(

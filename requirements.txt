@@ -13,3 +13,4 @@ loguru>=0.7.0
 edge-tts>=7.0.0
 pypdf>=6.0.0
 cryptography>=3.1
+keyring

@@ -1180,3 +1180,31 @@ body::before {
     0%, 100% { opacity: 0.55; transform: scaleY(1); }
     50%      { opacity: 0.95; transform: scaleY(1.08); }
 }
+.os-btn-primary {
+    background: var(--aki-color-neon-cyan);
+    color: var(--aki-color-bg-void);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.os-btn-primary:hover {
+    opacity: 0.8;
+}
+
+.os-btn-secondary {
+    background: var(--aki-color-bg-surface-elevated);
+    color: var(--aki-color-text-primary);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.os-btn-secondary:hover {
+    background: var(--aki-color-bg-surface-hover);
+}

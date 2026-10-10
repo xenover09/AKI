@@ -337,15 +337,91 @@ class AKIBridge(QObject):
             else [],
             "voice_input": self._speech_transcriber is not None,
             "ai_provider": provider or "unknown",
-            "ai_model": model or "",
+            "ai_model": self._settings.value("ai_model", model or ""),
             "ai_connected": self._ai_service is not None,
             "profile_name": self._settings.value("profile_name", "SALAAR"),
+            "ai_preset": self._settings.value("ai_preset", "ollama"),
+            "ai_base_url": self._settings.value("ai_base_url", settings_snapshot.ai_base_url if settings_snapshot else ""),
+            "ai_api_key": "********" if self._has_api_key() else "",
         }
+
+    def _has_api_key(self) -> bool:
+        try:
+            import keyring
+            return bool(keyring.get_password("AKI", "gemini_api_key"))
+        except Exception:
+            return False
 
     @Slot(str)
     def setProfileName(self, name: str) -> None:
         if name:
             self._settings.setValue("profile_name", name)
+
+    @Slot(str, str, str, str, result=bool)
+    def saveAiSettings(self, preset: str, base_url: str, model: str, api_key: str) -> bool:
+        self._settings.setValue("ai_preset", preset)
+        self._settings.setValue("ai_base_url", base_url)
+        self._settings.setValue("ai_model", model)
+        
+        actual_key = ""
+        try:
+            import keyring
+            if api_key and api_key != "********":
+                keyring.set_password("AKI", "gemini_api_key", api_key.strip())
+            actual_key = keyring.get_password("AKI", "gemini_api_key") or ""
+        except Exception as e:
+            logger.error("Keyring error: %s", e)
+            
+        from ai_engine.providers.openai_compatible import OpenAICompatibleProvider
+        from ai_engine import AIService
+        try:
+            provider = OpenAICompatibleProvider(
+                base_url=base_url,
+                api_key=actual_key or "sk-dummy",
+                model=model,
+            )
+            self._ai_service = AIService(provider)
+            return True
+        except Exception as e:
+            logger.error("Failed to reconfigure AI: %s", e)
+            return False
+
+    @Slot(str, str, str, result=str)
+    def testAiConnection(self, base_url: str, model: str, api_key: str) -> str:
+        actual_key = api_key
+        if actual_key == "********":
+            try:
+                import keyring
+                actual_key = keyring.get_password("AKI", "gemini_api_key") or ""
+            except Exception:
+                actual_key = ""
+                
+        import time
+        import httpx
+        start = time.time()
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                headers = {"Authorization": f"Bearer {actual_key}", "Content-Type": "application/json"}
+                payload = {
+                    "model": model,
+                    "messages": [{"role": "user", "content": "Hello"}],
+                    "max_tokens": 5
+                }
+                url = f"{base_url.rstrip('/')}/chat/completions"
+                resp = client.post(url, json=payload, headers=headers)
+                elapsed = int((time.time() - start) * 1000)
+                
+                if resp.status_code == 401:
+                    return f"❌ 401 — API key ghalat ya expired"
+                elif resp.status_code == 404:
+                    return f"❌ 404 — endpoint not found (check base_url or model)"
+                
+                resp.raise_for_status()
+                return f"✅ Connected ({model} • {elapsed}ms)"
+        except httpx.TimeoutException:
+            return "❌ network timeout — internet check karo"
+        except Exception as e:
+            return f"❌ Connection failed: {e}"
 
     def _effective_tts_voice(self) -> str:
         """Return the neural voice that will actually be used next."""
