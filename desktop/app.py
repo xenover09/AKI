@@ -128,17 +128,14 @@ class AKIApplication:
         memory_service = None
         memory_search_service = None
         reminder_manager = None
-        knowledge_library = None
         if database_service is not None:
             from automation.reminder_manager import ReminderManager
-            from knowledge.store import KnowledgeLibrary
             from memory.memory_search import MemorySearchService
             from memory.memory_service import MemoryService
 
             memory_service = MemoryService(database_service)
             memory_search_service = MemorySearchService(database_service)
             reminder_manager = ReminderManager(database_service)
-            knowledge_library = KnowledgeLibrary(database_service)
 
         return MainWindow(
             ai_service=ai_service,
@@ -148,7 +145,8 @@ class AKIApplication:
             action_system=action_system,
             speech_transcriber=self._build_speech_transcriber(),
             speech_service=SpeechService(),
-            reminder_manager=reminder_manager,            app_settings=self._runtime.boot.settings,
+            reminder_manager=reminder_manager,
+            app_settings=self._runtime.boot.settings,
         )
 
     def _build_speech_transcriber(self):
