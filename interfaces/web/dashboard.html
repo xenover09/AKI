@@ -43,7 +43,7 @@
                 <div class="aki-layout-left aki-fade-in">
                     <div class="greeting-box">
                         <div class="aki-greeting-time" id="greetingTime">GOOD MORNING</div>
-                        <div class="aki-greeting-name">SALAAR</div>
+                        <div class="aki-greeting-name" id="greetingName">SALAAR</div>
                         <p class="aki-greeting-sub">How can I assist your workflow today?</p>
                     </div>
                 </div>
@@ -99,54 +99,209 @@
 
     <!-- Settings Drawer -->
     <div class="os-settings-backdrop" id="settingsBackdrop"></div>
-    <aside class="os-settings-drawer" id="settingsDrawer">
-        <div class="os-settings-header">
-            <span>SYSTEM SETTINGS</span>
-            <button class="os-chat-clear" id="btnSettingsClose">✕</button>
+    <div class="os-settings-modal" id="settingsDrawer">
+        <div class="os-settings-left">
+            <div class="os-settings-title">SYSTEM SETTINGS</div>
+            <ul class="os-settings-nav" id="settingsNav">
+                <li class="active" data-tab="profile"><span>👤</span> Profile</li>
+                <li data-tab="appearance"><span>👁</span> Appearance</li>
+                <li data-tab="voice"><span>🎙</span> Voice</li>
+                <li data-tab="ai"><span>🧠</span> AI Provider</li>
+                <li data-tab="permissions"><span>🛡</span> Permissions</li>
+                <li data-tab="connectors"><span>🔗</span> Connectors</li>
+                <li data-tab="devices"><span>📱</span> Devices</li>
+                <li data-tab="data"><span>📊</span> Data controls</li>
+                <li data-tab="help"><span>❓</span> Help & support</li>
+                <li data-tab="about"><span>ℹ</span> About</li>
+            </ul>
         </div>
-
-        <div class="os-settings-body">
-
-            <div class="os-setting-row">
-                <div class="os-setting-info">
-                    <div class="os-setting-name">Spoken Replies</div>
-                    <div class="os-setting-desc">AKI answers awaz mein bole</div>
-                </div>
-                <label class="os-switch">
-                    <input type="checkbox" id="setVoiceOutput" checked>
-                    <span class="os-slider"></span>
-                </label>
+        <div class="os-settings-right">
+            <div class="os-settings-right-header">
+                <button class="os-chat-clear" id="btnSettingsClose">✕</button>
             </div>
-
-            <div class="os-setting-row">
-                <div class="os-setting-info">
-                    <div class="os-setting-name">TTS Voice</div>
-                    <div class="os-setting-desc">Neural awaz ka intekhab</div>
+            <div class="os-settings-content">
+                
+                <!-- PROFILE -->
+                <div class="settings-tab-pane active" id="tab-profile">
+                    <h2 class="settings-section-title">Profile</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Your Name</div>
+                                <div class="os-setting-desc">Used for greeting</div>
+                            </div>
+                            <input type="text" id="inpProfileName" class="os-setting-input">
+                        </div>
+                    </div>
                 </div>
-                <select class="os-select" id="setTtsVoice"></select>
-            </div>
 
-            <div class="os-setting-row">
-                <div class="os-setting-info">
-                    <div class="os-setting-name">Voice Input</div>
-                    <div class="os-setting-desc" id="setVoiceInputDesc">Whisper speech-to-text</div>
+                <!-- APPEARANCE -->
+                <div class="settings-tab-pane" id="tab-appearance">
+                    <h2 class="settings-section-title">Appearance</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Theme Mode</div>
+                                <div class="os-setting-desc">Currently locked to Dark Solid</div>
+                            </div>
+                            <div class="os-segmented-control" id="themeSegmentControl">
+                                <button class="theme-btn active" data-theme="dark">Dark</button>
+                                <button class="theme-btn" data-theme="light">Light</button>
+                                <button class="theme-btn" data-theme="system">System</button>
+                            </div>
+                        </div>
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Accent Color</div>
+                            </div>
+                            <div class="os-color-dots">
+                                <div class="color-dot active" style="background: #A259FF;"></div>
+                                <div class="color-dot" style="background: #00FF9D;"></div>
+                                <div class="color-dot" style="background: #0077ff;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <span class="os-status-badge" id="setVoiceInputBadge">—</span>
-            </div>
 
-            <div class="os-setting-row">
-                <div class="os-setting-info">
-                    <div class="os-setting-name">AI Provider</div>
-                    <div class="os-setting-desc" id="setProviderDesc">—</div>
+                <!-- VOICE -->
+                <div class="settings-tab-pane" id="tab-voice">
+                    <h2 class="settings-section-title">Voice</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Spoken Replies</div>
+                                <div class="os-setting-desc">AKI answers with voice</div>
+                            </div>
+                            <label class="os-switch">
+                                <input type="checkbox" id="setVoiceOutput" checked>
+                                <span class="os-slider"></span>
+                            </label>
+                        </div>
+                        <div class="os-setting-row">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">TTS Voice</div>
+                            </div>
+                            <select class="os-select" id="setTtsVoice"></select>
+                        </div>
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Voice Input</div>
+                                <div class="os-setting-desc" id="setVoiceInputDesc">Whisper speech-to-text</div>
+                            </div>
+                            <span class="os-status-badge" id="setVoiceInputBadge">—</span>
+                        </div>
+                    </div>
                 </div>
-                <span class="os-status-badge" id="setProviderBadge">—</span>
-            </div>
 
-            <div class="os-settings-footer">
-                AKI Personal AI Ecosystem · v0.1.0
+                <!-- AI PROVIDER -->
+                <div class="settings-tab-pane" id="tab-ai">
+                    <h2 class="settings-section-title">AI Provider</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Current Provider</div>
+                                <div class="os-setting-desc" id="setProviderDesc">—</div>
+                            </div>
+                            <span class="os-status-badge" id="setProviderBadge">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERMISSIONS -->
+                <div class="settings-tab-pane" id="tab-permissions">
+                    <h2 class="settings-section-title">Permissions</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">SAFE Tier</div>
+                                <div class="os-setting-desc">Web search, basic OS reading (Always Allowed)</div>
+                            </div>
+                            <span class="os-status-badge" style="color:var(--aki-color-status-success)">ACTIVE</span>
+                        </div>
+                        <div class="os-setting-row">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">SENSITIVE Tier</div>
+                                <div class="os-setting-desc">Writing files, APIs, sending emails</div>
+                            </div>
+                            <label class="os-switch">
+                                <input type="checkbox" checked>
+                                <span class="os-slider"></span>
+                            </label>
+                        </div>
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">DANGEROUS Tier</div>
+                                <div class="os-setting-desc">Executing code, terminal commands</div>
+                            </div>
+                            <label class="os-switch">
+                                <input type="checkbox">
+                                <span class="os-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONNECTORS -->
+                <div class="settings-tab-pane" id="tab-connectors">
+                    <h2 class="settings-section-title">Connectors</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Google Workspace</div>
+                                <div class="os-setting-desc">Docs, Drive, Mail</div>
+                            </div>
+                            <button class="os-btn">Connect</button>
+                        </div>
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">GitHub</div>
+                                <div class="os-setting-desc">Repos, Issues, PRs</div>
+                            </div>
+                            <button class="os-btn">Connect</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PLACEHOLDERS -->
+                <div class="settings-tab-pane" id="tab-devices">
+                    <h2 class="settings-section-title">Devices</h2>
+                    <div class="settings-card">
+                        <div class="os-placeholder">Coming soon</div>
+                    </div>
+                </div>
+                <div class="settings-tab-pane" id="tab-data">
+                    <h2 class="settings-section-title">Data controls</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">Local Data</div>
+                                <div class="os-setting-desc">Clear memory or export DB</div>
+                            </div>
+                            <button class="os-btn">Export</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-tab-pane" id="tab-help">
+                    <h2 class="settings-section-title">Help & support</h2>
+                    <div class="settings-card">
+                        <div class="os-placeholder">Coming soon</div>
+                    </div>
+                </div>
+                <div class="settings-tab-pane" id="tab-about">
+                    <h2 class="settings-section-title">About</h2>
+                    <div class="settings-card">
+                        <div class="os-setting-row" style="border-bottom: none;">
+                            <div class="os-setting-info">
+                                <div class="os-setting-name">AKI Ecosystem</div>
+                                <div class="os-setting-desc">Version 0.1.0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
         </div>
-    </aside>
+    </div>
 
     <!-- Scripts -->
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>

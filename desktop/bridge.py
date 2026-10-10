@@ -339,7 +339,13 @@ class AKIBridge(QObject):
             "ai_provider": provider or "unknown",
             "ai_model": model or "",
             "ai_connected": self._ai_service is not None,
+            "profile_name": self._settings.value("profile_name", "SALAAR"),
         }
+
+    @Slot(str)
+    def setProfileName(self, name: str) -> None:
+        if name:
+            self._settings.setValue("profile_name", name)
 
     def _effective_tts_voice(self) -> str:
         """Return the neural voice that will actually be used next."""

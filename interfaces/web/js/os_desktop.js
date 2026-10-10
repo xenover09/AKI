@@ -648,8 +648,38 @@
         const inputBadge = document.getElementById("setVoiceInputBadge");
         const providerBadge = document.getElementById("setProviderBadge");
         const providerDesc = document.getElementById("setProviderDesc");
+        
+        // New elements
+        const inpProfileName = document.getElementById("inpProfileName");
+        const greetingName = document.getElementById("greetingName");
+        const settingsNavItems = document.querySelectorAll("#settingsNav li");
+        const settingsPanes = document.querySelectorAll(".settings-tab-pane");
 
         if (!drawer || !btnOpen) return;
+
+        // Tab switching logic
+        settingsNavItems.forEach(item => {
+            item.addEventListener("click", () => {
+                settingsNavItems.forEach(n => n.classList.remove("active"));
+                settingsPanes.forEach(p => p.classList.remove("active"));
+                
+                item.classList.add("active");
+                const tabId = item.getAttribute("data-tab");
+                const pane = document.getElementById("tab-" + tabId);
+                if(pane) pane.classList.add("active");
+            });
+        });
+
+        // Profile Name logic
+        if (inpProfileName) {
+            inpProfileName.addEventListener("input", (e) => {
+                const newName = e.target.value.trim() || "SALAAR";
+                if (greetingName) greetingName.textContent = newName.toUpperCase();
+                if (bridge && typeof bridge.setProfileName === "function") {
+                    bridge.setProfileName(newName);
+                }
+            });
+        }
 
         function openDrawer() {
             if (window.AKISound) window.AKISound.playClick();
@@ -673,6 +703,11 @@
             bridge.getSettings().then((s) => {
                 if (!s) return;
 
+                if (inpProfileName && s.profile_name) {
+                    inpProfileName.value = s.profile_name;
+                    if (greetingName) greetingName.textContent = s.profile_name.toUpperCase();
+                }
+
                 if (voiceToggle) voiceToggle.checked = !!s.voice_output;
 
                 if (voiceSelect) {
@@ -695,13 +730,15 @@
                         : "Connected nahi — .env check karein";
                 }
             });
-            
+
             if (typeof bridge.getAppearance === "function") {
                 bridge.getAppearance().then((mode) => {
-                    const appearanceRadios = document.querySelectorAll('input[name="theme_app"]');
-                    appearanceRadios.forEach(radio => {
-                        if (radio.value === mode) {
-                            radio.checked = true;
+                    const themeBtns = document.querySelectorAll(".theme-btn");
+                    themeBtns.forEach(btn => {
+                        if (btn.getAttribute("data-theme") === mode) {
+                            btn.classList.add("active");
+                        } else {
+                            btn.classList.remove("active");
                         }
                     });
                 });
@@ -732,13 +769,15 @@
             };
         }
 
-        const appearanceRadios = document.querySelectorAll('input[name="theme_app"]');
-        appearanceRadios.forEach(radio => {
-            radio.onchange = (e) => {
+        const themeBtns = document.querySelectorAll(".theme-btn");
+        themeBtns.forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                themeBtns.forEach(b => b.classList.remove("active"));
+                e.target.classList.add("active");
                 if (bridge && typeof bridge.setAppearance === "function") {
-                    bridge.setAppearance(e.target.value);
+                    bridge.setAppearance(e.target.getAttribute("data-theme"));
                 }
-            };
+            });
         });
     }
 

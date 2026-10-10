@@ -1,0 +1,210 @@
+/* ==========================================================================
+   AKI Settings Page Redesign (Muse style)
+   ========================================================================== */
+
+.os-settings-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.os-settings-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%) scale(0.96);
+    width: 900px;
+    height: 600px;
+    max-width: 95vw;
+    max-height: 90vh;
+    z-index: 300;
+    display: none;
+    background: var(--aki-color-bg-void);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.os-settings-modal.open {
+    display: flex;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.os-settings-left {
+    width: 260px;
+    background: var(--aki-color-bg-surface-base);
+    border-right: 1px solid var(--aki-border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+}
+
+.os-settings-title {
+    font-family: var(--aki-font-subhead);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--aki-color-text-secondary);
+    margin-bottom: 24px;
+    padding-left: 12px;
+}
+
+.os-settings-nav {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.os-settings-nav li {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--aki-color-text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s, color 0.2s;
+}
+.os-settings-nav li span {
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+.os-settings-nav li:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.os-settings-nav li.active {
+    background: rgba(162, 89, 255, 0.15); /* Accent tint */
+    color: var(--aki-color-neon-cyan);
+}
+.os-settings-nav li.active span {
+    opacity: 1;
+}
+
+.os-settings-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--aki-color-bg-void);
+}
+
+.os-settings-right-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px;
+}
+
+.os-settings-content {
+    flex: 1;
+    padding: 0 40px 40px;
+    overflow-y: auto;
+}
+
+.settings-tab-pane {
+    display: none;
+    animation: fade-in 0.3s;
+}
+.settings-tab-pane.active {
+    display: block;
+}
+
+.settings-section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.settings-card {
+    background: var(--aki-color-bg-surface-base);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 12px;
+    padding: 0 20px;
+}
+
+.os-setting-input {
+    background: var(--aki-color-bg-void);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 6px;
+    color: var(--aki-color-text-primary);
+    padding: 8px 12px;
+    font-size: 14px;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.os-setting-input:focus {
+    border-color: var(--aki-color-neon-cyan);
+}
+
+.os-segmented-control {
+    display: flex;
+    background: var(--aki-color-bg-void);
+    border: 1px solid var(--aki-border-subtle);
+    border-radius: 8px;
+    padding: 2px;
+}
+.os-segmented-control button {
+    background: transparent;
+    border: none;
+    color: var(--aki-color-text-secondary);
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.os-segmented-control button.active {
+    background: var(--aki-color-bg-surface-base);
+    color: var(--aki-color-text-primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.os-segmented-control button[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.os-color-dots {
+    display: flex;
+    gap: 12px;
+}
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+.color-dot.active {
+    border-color: white;
+    box-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+.os-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--aki-border-subtle);
+    color: var(--aki-color-text-primary);
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.os-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.os-placeholder {
+    padding: 30px;
+    text-align: center;
+    color: var(--aki-color-text-muted);
+    font-size: 14px;
+    font-style: italic;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

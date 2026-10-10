@@ -9,6 +9,7 @@
 @import url('components.css');
 @import url('layout.css');
 @import url('os_realism.css');
+@import url('settings.css');
 
 /* Global CSS Reset & Base Application Defaults */
 *, *::before, *::after {
