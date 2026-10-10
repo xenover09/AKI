@@ -151,9 +151,6 @@
     overflow: hidden;
     background: var(--aki-color-bg-surface-base);
     border: 1px solid var(--aki-border-subtle);
-    
-    
-    -webkit-
 }
 
 .os-chat-panel.visible {

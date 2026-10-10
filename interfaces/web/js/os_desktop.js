@@ -561,7 +561,7 @@
 
         elements.btnVoice.style.background = isVoiceListening ? "var(--os-cyan)" : "";
         elements.btnVoice.style.color = isVoiceListening ? "#030712" : "";
-        elements.btnVoice.textContent = isVoiceListening ? "⏹" : "🎙";
+        elements.btnVoice.textContent = isVoiceListening ? "STOP" : "MIC";
     }
 
     async function sendRecordingToBridge() {

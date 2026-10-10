@@ -235,9 +235,6 @@
     justify-content: center;
     background: none;
     border: none;
-    
-    
-    -webkit-
 }
 
 /* Ambient glow moved here */
@@ -332,7 +329,8 @@
 .aki-command-wrapper {
     width: 100%;
     max-width: 500px;
-    margin-bottom: 15px; /* Add space below command bar */
+    margin-top: auto;
+    margin-bottom: 15px;
 }
 .aki-command-bar {
     display: flex;
