@@ -43,7 +43,6 @@ class MainWindow(QMainWindow):
         speech_transcriber: Optional[Any] = None,
         speech_service: Optional[Any] = None,
         reminder_manager: Optional[Any] = None,
-        knowledge_library: Optional[Any] = None,
         app_settings: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
@@ -72,7 +71,6 @@ class MainWindow(QMainWindow):
         self._speech_transcriber = speech_transcriber
         self._speech_service = speech_service
         self._reminder_manager = reminder_manager
-        self._knowledge_library = knowledge_library
         self._app_settings = app_settings
         self._settings = QSettings("AKI", "DesktopOS")
         self._drag_position: QPoint = QPoint()
@@ -127,7 +125,6 @@ class MainWindow(QMainWindow):
             speech_transcriber=self._speech_transcriber,
             speech_service=self._speech_service,
             reminder_manager=self._reminder_manager,
-            knowledge_library=self._knowledge_library,
             app_settings=self._app_settings,
             parent=self,
         )

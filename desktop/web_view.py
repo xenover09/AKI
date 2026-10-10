@@ -39,7 +39,6 @@ class AKIWebView(QWebEngineView):
         speech_transcriber: Optional[Any] = None,
         speech_service: Optional[Any] = None,
         reminder_manager: Optional[Any] = None,
-        knowledge_library: Optional[Any] = None,
         app_settings: Optional[Any] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
@@ -68,7 +67,6 @@ class AKIWebView(QWebEngineView):
             speech_transcriber=speech_transcriber,
             speech_service=speech_service,
             reminder_manager=reminder_manager,
-            knowledge_library=knowledge_library,
             app_settings=app_settings,
         )
         self._channel = QWebChannel(self)
