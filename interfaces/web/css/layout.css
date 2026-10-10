@@ -112,8 +112,9 @@
     grid-column: 2;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
+    padding-bottom: var(--aki-space-12);
 }
 
 .aki-layout-right {
