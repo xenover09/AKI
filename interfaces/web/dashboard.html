@@ -14,14 +14,11 @@
         <header class="aki-layout-topbar">
             <div class="aki-topbar-left">
                 <span class="aki-topbar-logo">AKI</span>
-                <span class="aki-topbar-icon">&lt;</span>
-                <span class="aki-topbar-title">AKI CORE SYSTEM</span>
+                <span class="aki-topbar-title">CORE SYSTEM</span>
             </div>
-            <div class="aki-topbar-center" id="osClockDate">WEDNESDAY, 06 AUGUST 2026</div>
+            <div class="aki-topbar-center" id="osClockDate"></div>
             <div class="aki-topbar-right">
-                <span class="aki-topbar-center" id="osClockTime">02:30 AM</span>
-                <span class="aki-topbar-icon">📶</span>
-                <span class="aki-topbar-icon" id="btnSoundToggle">🔊</span>
+                <span class="aki-topbar-center" id="osClockTime"></span>
                 <button class="aki-win-btn" id="btnMin">—</button>
                 <button class="aki-win-btn" id="btnMax">▢</button>
                 <button class="aki-win-btn close" id="btnClose">✕</button>
@@ -31,67 +28,16 @@
         <!-- Main Workspace -->
         <div class="aki-layout-workspace">
             
-            <!-- Left Dock -->
-            <nav class="aki-layout-sidebar">
-                <button class="aki-nav-btn active" data-nav="home">⌂</button>
-                <button class="aki-nav-btn" data-nav="settings" id="btnSettingsNav">⚙</button>
-            </nav>
+
 
             <!-- Inner Grid (Dashboard Content) -->
             <main class="aki-layout-desktop">
                 
-                <!-- Left Area: Greeting & Quick Actions -->
+                <!-- Left Area: Greeting & Chat (Command Instrument) -->
                 <div class="aki-layout-left aki-fade-in">
                     <div class="greeting-box">
                         <h1 class="aki-greeting" id="greetingTitle">Good Morning,<br>SALAAR</h1>
                         <p class="aki-greeting-sub">How can I assist your workflow today?</p>
-                    </div>
-
-                    <div class="aki-glass-panel aki-events-panel">
-                        <div class="aki-panel-header">UPCOMING EVENTS <span class="aki-topbar-icon">✕</span></div>
-                        <ul class="aki-events-list">
-                            <li><span class="icon">📅</span> Project Meeting <span class="time">10:00 AM</span></li>
-                            <li><span class="icon">📝</span> Code Review <span class="time">02:30 PM</span></li>
-                            <li><span class="icon">🏃</span> Workout <span class="time">06:00 PM</span></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Center Area: Dock directly beneath -->
-                <div class="aki-layout-center aki-fade-in">
-                    <div class="aki-dock">
-                        <div class="aki-dock-item brand">AKI</div>
-                        <div class="aki-dock-item">⊞</div>
-                        <div class="aki-dock-item">◈</div>
-                        <div class="aki-dock-item">◇</div>
-                        <div class="aki-dock-item">◱</div>
-                        <div class="aki-dock-item">◲</div>
-                        <div class="aki-dock-item">+</div>
-                    </div>
-                </div>
-
-                <!-- Right Area: Status, Chat, Command -->
-                <div class="aki-layout-right aki-fade-in">
-                    <div class="aki-glass-panel">
-                        <div class="aki-panel-header">SYSTEM STATUS <span class="aki-topbar-icon">✕</span></div>
-                        <div class="aki-telemetry-row">
-                            <div class="aki-telemetry-item">
-                                <div class="aki-telemetry-label">CPU</div>
-                                <div class="aki-telemetry-val" id="osCpuVal">18%</div>
-                            </div>
-                            <div class="aki-telemetry-item">
-                                <div class="aki-telemetry-label">RAM</div>
-                                <div class="aki-telemetry-val" id="osRamVal">32%</div>
-                            </div>
-                            <div class="aki-telemetry-item">
-                                <div class="aki-telemetry-label">GPU</div>
-                                <div class="aki-telemetry-val" id="osGpuVal">12%</div>
-                            </div>
-                        </div>
-                        <div class="aki-health-row">
-                            <div class="aki-telemetry-label">SYSTEM HEALTH</div>
-                            <div class="aki-health-val" id="osHealthLabel">EXCELLENT</div>
-                        </div>
                     </div>
 
                     <div class="os-chat-panel" id="chatPanel">
@@ -104,13 +50,46 @@
 
                     <div class="aki-command-wrapper">
                         <div class="aki-command-bar">
-                            <span class="aki-cmd-icon">🔍</span>
+                            <span class="aki-cmd-icon">/</span>
                             <input type="text" class="aki-cmd-input" id="cmdInput" placeholder="Ask AKI or type a system command..." autocomplete="off">
-                            <button id="btnVoice" class="aki-cmd-voice">🎙</button>
+                            <button id="btnVoice" class="aki-cmd-voice">MIC</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Area: Subtle System Status -->
+                <div class="aki-layout-right aki-fade-in">
+                    <div class="aki-glass-panel">
+                        <div class="aki-panel-header">SYSTEM STATUS</div>
+                        <div class="aki-telemetry-row">
+                            <div class="aki-telemetry-item">
+                                <div class="aki-telemetry-label">CPU</div>
+                                <div class="aki-telemetry-val" id="osCpuVal">--%</div>
+                            </div>
+                            <div class="aki-telemetry-item">
+                                <div class="aki-telemetry-label">RAM</div>
+                                <div class="aki-telemetry-val" id="osRamVal">--%</div>
+                            </div>
+                            <div class="aki-telemetry-item">
+                                <div class="aki-telemetry-label">GPU</div>
+                                <div class="aki-telemetry-val" id="osGpuVal">--%</div>
+                            </div>
+                        </div>
+                        <div class="aki-health-row">
+                            <div class="aki-telemetry-label">SYSTEM HEALTH</div>
+                            <div class="aki-health-val" id="osHealthLabel">EXCELLENT</div>
                         </div>
                     </div>
                 </div>
             </main>
+            
+            <!-- Bottom Dock (macOS style taskbar) -->
+            <div class="aki-layout-bottom" style="padding-bottom: 20px;">
+                <nav class="aki-dock">
+                    <button class="aki-dock-item active" data-nav="home">⌂</button>
+                    <button class="aki-dock-item" data-nav="settings" id="btnSettingsNav">⚙</button>
+                </nav>
+            </div>
         </div>
     </div>
 
@@ -125,17 +104,6 @@
         </div>
 
         <div class="os-settings-body">
-            <div class="os-setting-row">
-                <div class="os-setting-info">
-                    <div class="os-setting-name">Appearance</div>
-                    <div class="os-setting-desc">Theme mode</div>
-                </div>
-                <div class="os-appearance-radios" style="display:flex;gap:10px;">
-                    <label><input type="radio" name="theme_app" value="dark"> Dark</label>
-                    <label><input type="radio" name="theme_app" value="light"> Light</label>
-                    <label><input type="radio" name="theme_app" value="system"> System</label>
-                </div>
-            </div>
 
             <div class="os-setting-row">
                 <div class="os-setting-info">
