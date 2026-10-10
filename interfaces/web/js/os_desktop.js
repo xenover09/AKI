@@ -1258,14 +1258,20 @@
         initCyberWindow();
 
         if (elements.cmdInput) {
-            elements.cmdInput.onkeydown = (e) => {
-                if (e.key === "Enter") executeCommand(null, { fromKeyboard: true });
-            };
+            elements.cmdInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    executeCommand(null, { fromKeyboard: true });
+                }
+            });
         }
         if (elements.chatInput) {
-            elements.chatInput.onkeydown = (e) => {
-                if (e.key === "Enter") executeCommand(null, { fromKeyboard: true });
-            };
+            elements.chatInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    executeCommand(null, { fromKeyboard: true });
+                }
+            });
         }
 
         // Sound Toggle Button — controls UI sounds AND spoken replies

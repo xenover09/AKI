@@ -257,19 +257,18 @@
 
 .os-chat-bubble.user {
     align-self: flex-end;
-    color: #eaf7ff;
-    background: none;
+    color: var(--aki-color-text-primary);
+    background: var(--aki-color-bg-surface-elevated);
     border: 1px solid var(--aki-border-subtle);
     border-bottom-right-radius: 4px;
 }
 
 .os-chat-bubble.aki {
     align-self: flex-start;
-    color: #d8f6ff;
-    background: var(--aki-color-bg-surface-base);
+    color: var(--aki-color-text-primary);
+    background: var(--aki-color-bg-surface-hover);
     border: 1px solid var(--aki-border-subtle);
     border-bottom-left-radius: 4px;
-    text-shadow: 0 0 12px #13131A;
 }
 
 @keyframes os-bubble-in {
