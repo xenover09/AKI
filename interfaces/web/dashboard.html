@@ -10,90 +10,18 @@
 <body>
     <div class="aki-app-container">
         
-        <!-- Topbar -->
-        <header class="aki-layout-topbar">
-            <div class="aki-topbar-left">
-                <span class="aki-topbar-logo">AKI</span>
-                <span class="aki-topbar-title">CORE SYSTEM</span>
-            </div>
-            <div class="aki-topbar-center" id="osClockDate"></div>
-            <div class="aki-topbar-right">
-                <span class="aki-topbar-center" id="osClockTime"></span>
-                <button class="aki-win-btn" id="btnMin">—</button>
-                <button class="aki-win-btn" id="btnMax">▢</button>
-                <button class="aki-win-btn close" id="btnClose">✕</button>
-            </div>
-        </header>
-
         <!-- Main Workspace -->
         <div class="aki-layout-workspace">
             
             <!-- Left Dock -->
-            <nav class="aki-layout-sidebar">
-                <button class="aki-nav-btn active" data-nav="home">⌂</button>
+            <nav class="aki-layout-sidebar" style="background: transparent; border: none;">
                 <div class="aki-nav-spacer" style="flex: 1;"></div>
-                <button class="aki-nav-btn" data-nav="settings" id="btnSettingsNav">⚙</button>
+                <button class="aki-nav-btn" data-nav="settings" id="btnSettingsNav" style="margin-bottom: 20px;">⚙</button>
             </nav>
-
 
             <!-- Inner Grid (Dashboard Content) -->
             <main class="aki-layout-desktop">
-                
                 <canvas id="aki-particle-canvas"></canvas>
-                
-                <!-- Left Area: Greeting -->
-                <div class="aki-layout-left aki-fade-in">
-                    <div class="greeting-box">
-                        <div class="aki-greeting-time" id="greetingTime">GOOD MORNING</div>
-                        <div class="aki-greeting-name" id="greetingName">SALAAR</div>
-                        <p class="aki-greeting-sub">How can I assist your workflow today?</p>
-                    </div>
-                </div>
-
-
-
-                <!-- Right Area: Subtle System Status -->
-                <div class="aki-layout-right aki-fade-in">
-                    <div class="aki-glass-panel">
-                        <div class="aki-panel-header">SYSTEM STATUS</div>
-                        <div class="aki-telemetry-row">
-                            <div class="aki-telemetry-item">
-                                <div class="aki-telemetry-label">CPU</div>
-                                <div class="aki-telemetry-val" id="osCpuVal">--%</div>
-                            </div>
-                            <div class="aki-telemetry-item">
-                                <div class="aki-telemetry-label">RAM</div>
-                                <div class="aki-telemetry-val" id="osRamVal">--%</div>
-                            </div>
-                            <div class="aki-telemetry-item">
-                                <div class="aki-telemetry-label">GPU</div>
-                                <div class="aki-telemetry-val" id="osGpuVal">--%</div>
-                            </div>
-                        </div>
-                        <div class="aki-health-row">
-                            <div class="aki-telemetry-label">SYSTEM HEALTH</div>
-                            <div class="aki-health-val" id="osHealthLabel">EXCELLENT</div>
-                        </div>
-                        </div>
-                    </div>
-                    
-                    <div class="os-chat-panel" id="chatPanel">
-                        <div class="os-chat-header">
-                            <span class="os-chat-title">LIVE CONVERSATION</span>
-                            <button class="os-chat-clear" id="btnChatClear" title="Clear conversation">✕</button>
-                        </div>
-                        <div class="os-chat-scroll" id="chatMessages">
-                            <div class="os-chat-empty-state" id="chatEmptyState">Ask AKI anything to get started</div>
-                        </div>
-                        <div class="aki-command-wrapper">
-                            <div class="aki-command-bar">
-                                <span class="aki-cmd-icon">/</span>
-                                <input type="text" class="aki-cmd-input" id="cmdInput" placeholder="Ask AKI or type a system command..." autocomplete="off">
-                                <button id="btnVoice" class="aki-cmd-voice">MIC</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </main>
         </div>
     </div>

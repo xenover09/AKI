@@ -26,73 +26,10 @@
 
     // DOM Elements Cache
     const elements = {
-        osClockTime: document.getElementById("osClockTime"),
-        osClockDate: document.getElementById("osClockDate"),
-        greetingTime: document.getElementById("greetingTime"),
-        
-        osCpuVal: document.getElementById("osCpuVal"),
-        osRamVal: document.getElementById("osRamVal"),
-        osGpuVal: document.getElementById("osGpuVal"),
-        osHealthLabel: document.getElementById("osHealthLabel"),
-        
-        cmdInput: document.getElementById("cmdInput"),
-        btnVoice: document.getElementById("btnVoice"),
-        btnAttach: document.getElementById("btnAttach"),
-        btnSubmit: document.getElementById("btnSubmit"),
-        attachmentPill: document.getElementById("attachmentPill"),
-        attachmentName: document.getElementById("attachmentName"),
-        waveformContainer: document.getElementById("waveformContainer"),
-        
         btnMin: document.getElementById("btnMin"),
         btnMax: document.getElementById("btnMax"),
-        btnClose: document.getElementById("btnClose"),
-        btnSoundToggle: document.getElementById("btnSoundToggle"),
-
-        chatInput: document.getElementById("chatInput"),
-        btnChatSubmit: document.getElementById("btnChatSubmit")
+        btnClose: document.getElementById("btnClose")
     };
-
-    // 1. Adaptive Greeting & Live System Clock
-    function updateClockAndGreeting() {
-        const now = new Date();
-        const hoursNum = now.getHours();
-        const hours = String(hoursNum).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        
-        if (elements.osClockTime) {
-            elements.osClockTime.textContent = `${hours}:${minutes}:${seconds}`;
-        }
-        if (elements.osClockDate) {
-            const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
-            elements.osClockDate.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
-        }
-
-        // Adaptive Greeting for User SALAAR
-        if (elements.greetingTime) {
-            let greeting = "GOOD EVENING";
-            if (hoursNum < 12) {
-                greeting = "GOOD MORNING";
-            } else if (hoursNum < 18) {
-                greeting = "GOOD AFTERNOON";
-            }
-            elements.greetingTime.textContent = greeting;
-        }
-    }
-
-    // 2. Real-time Telemetry Renderer
-    function renderTelemetry(data) {
-        if (!data || !data.system) return;
-
-        const cpu = data.system.cpu_percent || 18;
-        const ram = data.system.ram_percent || 32;
-        const gpu = Math.round(cpu * 0.6 + 6);
-
-        if (elements.osCpuVal) elements.osCpuVal.textContent = `${cpu}%`;
-        if (elements.osRamVal) elements.osRamVal.textContent = `${ram}%`;
-        if (elements.osGpuVal) elements.osGpuVal.textContent = `${gpu}%`;
-        if (elements.osHealthLabel) elements.osHealthLabel.textContent = data.system.status_label || "EXCELLENT";
-    }
 
     // 3. Multi-View Stack Navigation Manager
     function switchView(targetViewId) {

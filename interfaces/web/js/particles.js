@@ -55,7 +55,7 @@ class ParticleSwarm {
 
     generateStates() {
         this.states = [];
-        let cx = this.width / 4; // Hero area is on the left
+        let cx = this.width / 2; // Center of screen
         let cy = this.height / 2;
         
         // State 0: CORE (dense orb)

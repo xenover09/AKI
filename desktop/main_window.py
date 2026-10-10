@@ -139,9 +139,16 @@ class MainWindow(QMainWindow):
         tm = ThemeManager.get_instance()
         if tm:
             tm.themeChanged.connect(self._on_theme_changed)
+            self._web_view.loadFinished.connect(
+                lambda ok: self._web_view.set_web_theme(not tm.is_dark()) if ok else None
+            )
+
     def _on_theme_changed(self, theme):
         """Re-skin webview when Qt theme changes dynamically."""
-        pass
+        from desktop.themes.theme_manager import ThemeManager
+        tm = ThemeManager.get_instance()
+        if tm and hasattr(self, "_web_view"):
+            self._web_view.set_web_theme(not tm.is_dark())
 
     def changeEvent(self, event) -> None:
         """Track window state changes (e.g. Maximize/Restore) and notify bridge."""
