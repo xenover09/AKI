@@ -142,7 +142,7 @@
 }
 
 .os-chat-panel {
-    display: none;
+    display: flex;
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;

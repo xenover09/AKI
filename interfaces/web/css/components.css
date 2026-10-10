@@ -79,12 +79,21 @@
 /* --------------------------------------------------------------------------
    Greeting & Typography
    -------------------------------------------------------------------------- */
-.aki-greeting {
+.aki-greeting-time {
     font-family: var(--aki-font-subhead);
-    font-size: 38px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--aki-color-text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: var(--aki-space-1);
+}
+.aki-greeting-name {
+    font-family: var(--aki-font-subhead);
+    font-size: 42px;
     font-weight: 700;
     color: var(--aki-color-text-primary);
-    line-height: 1.1;
+    line-height: 1;
     letter-spacing: 2px;
     text-transform: uppercase;
 }

@@ -28,7 +28,7 @@
     const elements = {
         osClockTime: document.getElementById("osClockTime"),
         osClockDate: document.getElementById("osClockDate"),
-        greetingTitle: document.getElementById("greetingTitle"),
+        greetingTime: document.getElementById("greetingTime"),
         
         osCpuVal: document.getElementById("osCpuVal"),
         osRamVal: document.getElementById("osRamVal"),
@@ -69,14 +69,14 @@
         }
 
         // Adaptive Greeting for User SALAAR
-        if (elements.greetingTitle) {
-            let greeting = "Good Evening, SALAAR";
+        if (elements.greetingTime) {
+            let greeting = "GOOD EVENING";
             if (hoursNum < 12) {
-                greeting = "Good Morning, SALAAR";
+                greeting = "GOOD MORNING";
             } else if (hoursNum < 18) {
-                greeting = "Good Afternoon, SALAAR";
+                greeting = "GOOD AFTERNOON";
             }
-            elements.greetingTitle.textContent = greeting;
+            elements.greetingTime.textContent = greeting;
         }
     }
 

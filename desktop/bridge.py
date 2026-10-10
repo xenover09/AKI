@@ -91,14 +91,6 @@ class AKIBridge(QObject):
         self._speech = speech_service
         self._reminder_manager = reminder_manager
 
-        if ai_service is not None:
-            self._dev_agent = DevAgent(
-                ai_responder=lambda prompt: ai_service.respond(
-                    prompt
-                ).content,
-            )
-        else:
-            self._dev_agent = None
 
         from services.web_search import WebSearchService
 

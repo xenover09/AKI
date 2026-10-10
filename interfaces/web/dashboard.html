@@ -28,34 +28,27 @@
         <!-- Main Workspace -->
         <div class="aki-layout-workspace">
             
+            <!-- Left Dock -->
+            <nav class="aki-layout-sidebar">
+                <button class="aki-nav-btn active" data-nav="home">⌂</button>
+                <div class="aki-nav-spacer" style="flex: 1;"></div>
+                <button class="aki-nav-btn" data-nav="settings" id="btnSettingsNav">⚙</button>
+            </nav>
 
 
             <!-- Inner Grid (Dashboard Content) -->
             <main class="aki-layout-desktop">
                 
-                <!-- Left Area: Greeting & Chat (Command Instrument) -->
+                <!-- Left Area: Greeting -->
                 <div class="aki-layout-left aki-fade-in">
                     <div class="greeting-box">
-                        <h1 class="aki-greeting" id="greetingTitle">Good Morning,<br>SALAAR</h1>
+                        <div class="aki-greeting-time" id="greetingTime">GOOD MORNING</div>
+                        <div class="aki-greeting-name">SALAAR</div>
                         <p class="aki-greeting-sub">How can I assist your workflow today?</p>
                     </div>
-
-                    <div class="os-chat-panel" id="chatPanel">
-                        <div class="os-chat-header">
-                            <span class="os-chat-title">AKI · LIVE CONVERSATION</span>
-                            <button class="os-chat-clear" id="btnChatClear" title="Clear conversation">✕</button>
-                        </div>
-                        <div class="os-chat-scroll" id="chatMessages"></div>
-                    </div>
-
-                    <div class="aki-command-wrapper">
-                        <div class="aki-command-bar">
-                            <span class="aki-cmd-icon">/</span>
-                            <input type="text" class="aki-cmd-input" id="cmdInput" placeholder="Ask AKI or type a system command..." autocomplete="off">
-                            <button id="btnVoice" class="aki-cmd-voice">MIC</button>
-                        </div>
-                    </div>
                 </div>
+
+
 
                 <!-- Right Area: Subtle System Status -->
                 <div class="aki-layout-right aki-fade-in">
@@ -79,17 +72,26 @@
                             <div class="aki-telemetry-label">SYSTEM HEALTH</div>
                             <div class="aki-health-val" id="osHealthLabel">EXCELLENT</div>
                         </div>
+                        </div>
+                    </div>
+                    
+                    <div class="os-chat-panel" id="chatPanel">
+                        <div class="os-chat-header">
+                            <span class="os-chat-title">LIVE CONVERSATION</span>
+                            <button class="os-chat-clear" id="btnChatClear" title="Clear conversation">✕</button>
+                        </div>
+                        <div class="os-chat-scroll" id="chatMessages"></div>
+                    </div>
+
+                    <div class="aki-command-wrapper">
+                        <div class="aki-command-bar">
+                            <span class="aki-cmd-icon">/</span>
+                            <input type="text" class="aki-cmd-input" id="cmdInput" placeholder="Command..." autocomplete="off">
+                            <button id="btnVoice" class="aki-cmd-voice">MIC</button>
+                        </div>
                     </div>
                 </div>
             </main>
-            
-            <!-- Bottom Dock (macOS style taskbar) -->
-            <div class="aki-layout-bottom" style="padding-bottom: 20px;">
-                <nav class="aki-dock">
-                    <button class="aki-dock-item active" data-nav="home">⌂</button>
-                    <button class="aki-dock-item" data-nav="settings" id="btnSettingsNav">⚙</button>
-                </nav>
-            </div>
         </div>
     </div>
 
