@@ -94,9 +94,6 @@ class AKIBridge(QObject):
         self._reminder_manager = reminder_manager
         self._knowledge = knowledge_library
 
-        from security.suite import CyberSuite
-
-        self._cyber = CyberSuite()
 
         if ai_service is not None:
             from dev_agent.agent import DevAgent
@@ -408,46 +405,14 @@ class AKIBridge(QObject):
     ) -> None:
         """Worker: execute the tool and emit a chat-visible summary."""
 
-        if tool == "port_scan" and parameter.strip():
-            result = self._cyber.run("port_scan", host=parameter.strip())
-        elif tool == "file_hashes" and parameter.strip():
-            result = self._cyber.run("file_hashes", path=parameter.strip())
-        else:
-            result = self._cyber.run(tool)
-
-        if result.ok:
-            detail = ""
-
-            if result.tool == "port_scan" and result.data.get("open"):
-                detail = f" Open ports: {result.data['open']}"
-
-            if result.tool == "connections":
-                rows = result.data.get("connections", [])
-                top = "\n".join(
-                    f"- {row['process']} -> {row['remote']}"
-                    for row in rows[:8]
-                )
-                detail = f"\n{top}" if top else ""
-
-            if result.tool == "audit":
-                detail = f"\n```json\n{result.data}\n```"
-
-            if result.tool == "recon":
-                interfaces = "\n".join(
-                    f"- {i['interface']}: {i['ip']}"
-                    for i in result.data.get("interfaces", [])
-                )
-                detail = (
-                    f"\n{interfaces}\n- Public IP: "
-                    f"{result.data.get('public_ip', 'n/a')}"
-                )
-
-            self._providerSucceeded.emit(
-                request_id,
-                f"🛡 **{result.tool.upper()}** — {result.summary}{detail}",
-            )
-        else:
-            self._providerFailed.emit(request_id, result.summary)
+        detail = "Security suite has been removed in Phase A."
+        summary = f"[{tool.upper()}] Security checks disabled."
+        msg = f"<b>{summary}</b>\n<pre>{detail}</pre>"
+        
+        self._providerSucceeded.emit(
+            request_id,
+            msg
+        )
 
     # ============================================================
     # Dev Agent + Cyber Suite (end)
